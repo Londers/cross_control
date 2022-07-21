@@ -1,26 +1,24 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect} from 'react';
 import './App.css';
+import {useAppDispatch} from "./hooks";
+import {wsConnect} from "../common/Middlewares/WebSocketMiddleware";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+            dispatch(wsConnect("wss://192.168.115.134:4443/user/Admin/cross/controlW?Region=1&Area=1&ID=11"))
+        } else {
+            dispatch(wsConnect(`wss://${window.location.host}/user/${localStorage.getItem("login")}/cross/controlW${window.location.search}`))
+        }
+    }, [dispatch])
+
+    return (
+        <div className="App">
+            main
+        </div>
+    );
 }
 
 export default App;
