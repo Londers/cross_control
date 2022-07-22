@@ -17,11 +17,14 @@ export const crossInfoSlice = createSlice({
     reducers: {
         setInitialData: (state, action: PayloadAction<CrossControlInfoMsg>) => {
             Object.assign(state, action.payload)
+        },
+        setDeviceType: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.arrays.type = action.payload
         }
     }
 })
 
-export const {setInitialData, } = crossInfoSlice.actions
+export const {setInitialData, setDeviceType} = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo
 
