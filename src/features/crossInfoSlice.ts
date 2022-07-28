@@ -4,7 +4,7 @@ import {RootState} from "../app/store";
 
 
 const initialState: CrossControlInfoMsg = {
-    areaMap: undefined,
+    areaMap: {},
     deviceIP: "",
     edit: false,
     history: [],
@@ -20,11 +20,38 @@ export const crossInfoSlice = createSlice({
         },
         setDeviceType: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.type = action.payload
-        }
+        },
+        setDeviceId: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.id = action.payload
+        },
+        setDeviceIdevice: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.idevice = action.payload
+        },
+        setDeviceArea: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.area = action.payload
+        },
+        setDeviceSubarea: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.subarea = action.payload
+        },
+        setDeviceName: (state, action: PayloadAction<string>) => {
+            if (state.state) state.state.name = action.payload
+        },
+        setDevicePhone: (state, action: PayloadAction<string>) => {
+            if (state.state) state.state.phone = action.payload
+        },
     }
 })
 
-export const {setInitialData, setDeviceType} = crossInfoSlice.actions
+export const {
+    setInitialData,
+    setDeviceType,
+    setDeviceId,
+    setDeviceIdevice,
+    setDeviceArea,
+    setDeviceSubarea,
+    setDeviceName,
+    setDevicePhone,
+} = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo
 

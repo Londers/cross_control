@@ -10,7 +10,7 @@ export type OutcomingWebSocketMessage = OutcomingDataType
 export type OutcomingDataType = any
 
 export interface CrossControlInfoMsg {
-    areaMap: AreaMap | undefined;
+    areaMap: AreaMap;
     deviceIP: string;
     edit: boolean;
     history: History[];
