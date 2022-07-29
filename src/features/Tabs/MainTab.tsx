@@ -1,16 +1,28 @@
 import React, {ChangeEvent} from "react";
-import {Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
+import {
+    Box,
+    Button, Checkbox,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Select,
+    SelectChangeEvent,
+    TextField
+} from "@mui/material";
 import ReloadIcon from "../../common/icons/ReloadIcon";
 import TimeIcon from "../../common/icons/TimeIcon";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {
+    changeDeviceSummertime, changeJournal, changeNogprs,
     selectCrossInfo,
     setDeviceArea,
     setDeviceId,
-    setDeviceIdevice, setDeviceName, setDevicePhone,
+    setDeviceIdevice, setDeviceName, setDevicePbsl, setDevicePbsr, setDevicePhone, setDevicePspd,
     setDeviceSubarea,
-    setDeviceType
+    setDeviceType, setDeviceTz
 } from "../crossInfoSlice";
+import SetupDKTable from "../Tables/SetupDKTable";
 
 function MainTab() {
     const width = 40
@@ -45,6 +57,34 @@ function MainTab() {
 
     const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
         dispatch(setDevicePhone(event.target.value))
+    }
+
+    const handleTzChange = (event: ChangeEvent<HTMLInputElement>) => {
+        dispatch(setDeviceTz(event.target.valueAsNumber))
+    }
+
+    const handleSummertimeChange = () => {
+        dispatch(changeDeviceSummertime())
+    }
+
+    const handlePspdChange = (event: SelectChangeEvent<string>) => {
+        dispatch(setDevicePspd(event.target.value))
+    }
+
+    const handlePbslChange = (event: ChangeEvent<HTMLInputElement>) => {
+        dispatch(setDevicePbsl(event.target.valueAsNumber))
+    }
+
+    const handlePbsrChange = (event: ChangeEvent<HTMLInputElement>) => {
+        dispatch(setDevicePbsr(event.target.valueAsNumber))
+    }
+
+    const handleJournalChange = () => {
+        dispatch(changeJournal())
+    }
+
+    const handleNogprsChange = () => {
+        dispatch(changeNogprs())
     }
 
     return (
@@ -111,11 +151,11 @@ function MainTab() {
                     onChange={handleSubareaChange}
                 />
             </div>
-            <br />
+            <br/>
             <div>
                 <Button variant="outlined">Выберите координаты</Button>
             </div>
-            <br />
+            <br/>
             <div>
                 <TextField
                     label="Место размещения"
@@ -124,6 +164,9 @@ function MainTab() {
                     value={crossInfo.state?.name ?? -1}
                     onChange={handleNameChange}
                 />
+            </div>
+            <br/>
+            <div>
                 <TextField
                     label="№ телефона"
                     // inputProps={{pattern: "^([0-9]{1,4}\\-){3}[0-9]{1,3}$"}}
@@ -132,6 +175,98 @@ function MainTab() {
                     value={crossInfo.state?.phone.trim() ?? -1}
                     onChange={handlePhoneChange}
                 />
+            </div>
+            <br/>
+            <div>
+                IP: {crossInfo.deviceIP}
+            </div>
+            <br/>
+            <div>
+                <TextField
+                    label="Часовой пояс"
+                    type="number"
+                    style={{width: "250px"}}
+                    value={crossInfo.state?.arrays.timedev.tz ?? -1}
+                    onChange={handleTzChange}
+                />
+                <FormControlLabel
+                    control={<Checkbox value={crossInfo.state?.arrays.timedev.summer}
+                                       onChange={handleSummertimeChange}/>}
+                    label="Сезонное время"
+                    labelPlacement="start"
+                />
+                <TextField
+                    label="Ожидание ответа"
+                    type="number"
+                    style={{width: "250px"}}
+                />
+            </div>
+            <br/>
+            <div>
+                Версия ПО
+                <FormControl sx={{width: "fit-content", minWidth: "90px"}}>
+                    <InputLabel id="demo-simple-select-label">ПСПД</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={((parseFloat(crossInfo.state?.Model.vpcpdl + "." + crossInfo.state?.Model.vpcpdr) <= 12.3) ? "12.3" : "12.4") ?? "12.3"}
+                        label="ПСПД"
+                        onChange={handlePspdChange}
+                    >
+                        <MenuItem value="12.3" key={0}>12.3 и меньше</MenuItem>
+                        <MenuItem value="12.4" key={1}>12.4 и больше</MenuItem>
+                    </Select>
+                </FormControl>
+                <TextField
+                    label="ПБС"
+                    type="number"
+                    style={{width: "75px"}}
+                    value={crossInfo.state?.Model.vpbsl ?? -1}
+                    onChange={handlePbslChange}
+                />
+                <span>.</span>
+                <TextField
+                    type="number"
+                    style={{width: "75px"}}
+                    value={crossInfo.state?.Model.vpbsr ?? -1}
+                    onChange={handlePbsrChange}
+                />
+            </div>
+            <br/>
+            <div>
+                <FormControlLabel
+                    control={<Checkbox/>}
+                    label="Запрет Неподчинение"
+                    labelPlacement="start"
+                />
+                <FormControlLabel
+                    control={<Checkbox/>}
+                    label="Запр. част. перег. ламг"
+                    labelPlacement="start"
+                />
+                <FormControlLabel
+                    control={<Checkbox/>}
+                    label="старый 3-цв. инд."
+                    labelPlacement="start"
+                />
+                <FormControlLabel
+                    control={<Checkbox value={crossInfo.state?.arrays.timedev.journal}
+                                       onChange={handleJournalChange}/>}
+                    label="Передача журнала"
+                    labelPlacement="start"
+                />
+                <FormControlLabel
+                    control={<Checkbox value={crossInfo.state?.arrays.timedev.nogprs}
+                                       onChange={handleNogprsChange}/>}
+                    label="Журнал. Запрет GPRS"
+                    labelPlacement="start"
+                />
+            </div>
+            <br/>
+            <div>
+                {
+                    crossInfo.state?.arrays.SetupDK && <SetupDKTable setup={crossInfo.state?.arrays.SetupDK}/>
+                }
             </div>
         </Box>
     )
