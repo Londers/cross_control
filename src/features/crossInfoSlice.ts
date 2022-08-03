@@ -1,4 +1,4 @@
-import {CrossControlInfoMsg, SetupDK} from "../common";
+import {CrossControlInfoMsg, SetupDK, State} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
 
@@ -15,8 +15,11 @@ export const crossInfoSlice = createSlice({
     name: "crossInfo",
     initialState,
     reducers: {
-        setInitialData: (state, action: PayloadAction<CrossControlInfoMsg>) => {
+        setCrossInfo: (state, action: PayloadAction<CrossControlInfoMsg>) => {
             Object.assign(state, action.payload)
+        },
+        setState: (state, action: PayloadAction<State>) => {
+            state.state = action.payload
         },
         setDeviceType: (state, action: PayloadAction<number>) => {
             if (state.state) {
@@ -59,8 +62,8 @@ export const crossInfoSlice = createSlice({
         setDeviceTz: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.timedev.tz = action.payload
         },
-        changeDeviceSummertime: (state) => {
-            if (state.state) state.state.arrays.timedev.summer = !state.state.arrays.timedev.summer
+        setDeviceSummertime: (state, action: PayloadAction<boolean>) => {
+            if (state.state) state.state.arrays.timedev.summer = action.payload
         },
         setDevicePspd: (state, action: PayloadAction<string>) => {
             if (state.state) {
@@ -73,11 +76,11 @@ export const crossInfoSlice = createSlice({
         setDevicePbsr: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.Model.vpbsr = action.payload
         },
-        changeJournal: (state) => {
-            if (state.state) state.state.arrays.timedev.journal = !state.state.arrays.timedev.journal
+        setJournal: (state, action: PayloadAction<boolean>) => {
+            if (state.state) state.state.arrays.timedev.journal = action.payload
         },
-        changeNogprs: (state) => {
-            if (state.state) state.state.arrays.timedev.nogprs = !state.state.arrays.timedev.nogprs
+        setNogprs: (state, action: PayloadAction<boolean>) => {
+            if (state.state) state.state.arrays.timedev.nogprs = action.payload
         },
         setSetupDk: (state, action: PayloadAction<SetupDK>) => {
             if (state.state) state.state.arrays.SetupDK = action.payload
@@ -86,7 +89,8 @@ export const crossInfoSlice = createSlice({
 })
 
 export const {
-    setInitialData,
+    setCrossInfo,
+    setState,
     setDeviceType,
     setDeviceId,
     setDeviceIdevice,
@@ -95,15 +99,16 @@ export const {
     setDeviceName,
     setDevicePhone,
     setDeviceTz,
-    changeDeviceSummertime,
+    setDeviceSummertime,
     setDevicePspd,
     setDevicePbsl,
     setDevicePbsr,
-    changeJournal,
-    changeNogprs,
+    setJournal,
+    setNogprs,
     setSetupDk,
 } = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo
+export const selectSetupDk = (state: RootState) => state.crossInfo.state?.arrays.SetupDK ?? {} as SetupDK
 
 export default crossInfoSlice.reducer

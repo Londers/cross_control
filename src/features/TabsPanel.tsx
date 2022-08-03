@@ -42,7 +42,8 @@ function a11yProps(index: number) {
 }
 
 function TabsPanel() {
-    const [value, setValue] = React.useState(0)
+    const [value, setValue] = React.useState(1)
+    const [pk, setPk] = React.useState(1)
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
@@ -65,7 +66,7 @@ function TabsPanel() {
                 <MainTab/>
             </TabPanel>
             <TabPanel value={value} index={1}>
-                <PkTab/>
+                <PkTab pk={pk} setPk={setPk}/>
             </TabPanel>
             <TabPanel value={value} index={2}>
                 <SkTab/>

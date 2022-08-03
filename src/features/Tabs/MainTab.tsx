@@ -1,7 +1,8 @@
 import React, {ChangeEvent} from "react";
 import {
     Box,
-    Button, Checkbox,
+    Button,
+    Checkbox,
     FormControl,
     FormControlLabel,
     InputLabel,
@@ -14,15 +15,26 @@ import ReloadIcon from "../../common/icons/ReloadIcon";
 import TimeIcon from "../../common/icons/TimeIcon";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {
-    changeDeviceSummertime, changeJournal, changeNogprs,
+    setDeviceSummertime,
+    setJournal,
+    setNogprs,
     selectCrossInfo,
     setDeviceArea,
     setDeviceId,
-    setDeviceIdevice, setDeviceName, setDevicePbsl, setDevicePbsr, setDevicePhone, setDevicePspd,
+    setDeviceIdevice,
+    setDeviceName,
+    setDevicePbsl,
+    setDevicePbsr,
+    setDevicePhone,
+    setDevicePspd,
     setDeviceSubarea,
-    setDeviceType, setDeviceTz
+    setDeviceType,
+    setDeviceTz,
 } from "../crossInfoSlice";
 import SetupDKTable from "../Tables/SetupDKTable";
+import {reloadMainTab} from "../../common/Middlewares/TabReloadMiddleware";
+
+// import {selectStateSave} from "../stateSaveSlice";
 
 function MainTab() {
     const width = 40
@@ -30,6 +42,11 @@ function MainTab() {
 
     const dispatch = useAppDispatch()
     const crossInfo = useAppSelector(selectCrossInfo)
+    // const savedState = useAppSelector(selectStateSave)
+
+    const handleReloadTabClick = () => {
+        dispatch(reloadMainTab())
+    }
 
     const handleTypeChange = (event: SelectChangeEvent<number>) => {
         dispatch(setDeviceType(Number(event.target.value)))
@@ -64,7 +81,7 @@ function MainTab() {
     }
 
     const handleSummertimeChange = () => {
-        dispatch(changeDeviceSummertime())
+        dispatch(setDeviceSummertime(!crossInfo.state?.arrays.timedev.summer))
     }
 
     const handlePspdChange = (event: SelectChangeEvent<string>) => {
@@ -80,17 +97,17 @@ function MainTab() {
     }
 
     const handleJournalChange = () => {
-        dispatch(changeJournal())
+        dispatch(setJournal(!crossInfo.state?.arrays.timedev.journal))
     }
 
     const handleNogprsChange = () => {
-        dispatch(changeNogprs())
+        dispatch(setNogprs(!crossInfo.state?.arrays.timedev.nogprs))
     }
 
     return (
         <Box style={{border: ".5px solid"}}>
             <div>
-                <Button variant="outlined">
+                <Button variant="outlined" title="Отменить изменения" onClick={handleReloadTabClick}>
                     <ReloadIcon width={width} height={height}/>
                 </Button>
                 <Button variant="outlined">
@@ -153,7 +170,7 @@ function MainTab() {
             </div>
             <br/>
             <div>
-                <Button variant="outlined">Выберите координаты</Button>
+                <Button variant="outlined" onClick={() => alert("in work")}>Выберите координаты</Button>
             </div>
             <br/>
             <div>
@@ -190,8 +207,9 @@ function MainTab() {
                     onChange={handleTzChange}
                 />
                 <FormControlLabel
-                    control={<Checkbox value={crossInfo.state?.arrays.timedev.summer}
-                                       onChange={handleSummertimeChange}/>}
+                    control={<Checkbox
+                        checked={crossInfo.state?.arrays.timedev.summer === true}
+                        onChange={handleSummertimeChange}/>}
                     label="Сезонное время"
                     labelPlacement="start"
                 />
@@ -250,13 +268,13 @@ function MainTab() {
                     labelPlacement="start"
                 />
                 <FormControlLabel
-                    control={<Checkbox value={crossInfo.state?.arrays.timedev.journal}
+                    control={<Checkbox checked={crossInfo.state?.arrays.timedev.journal === true}
                                        onChange={handleJournalChange}/>}
                     label="Передача журнала"
                     labelPlacement="start"
                 />
                 <FormControlLabel
-                    control={<Checkbox value={crossInfo.state?.arrays.timedev.nogprs}
+                    control={<Checkbox checked={crossInfo.state?.arrays.timedev.nogprs === true}
                                        onChange={handleNogprsChange}/>}
                     label="Журнал. Запрет GPRS"
                     labelPlacement="start"
@@ -264,9 +282,10 @@ function MainTab() {
             </div>
             <br/>
             <div>
-                {
-                    crossInfo.state?.arrays.SetupDK && <SetupDKTable setup={crossInfo.state?.arrays.SetupDK}/>
-                }
+                <SetupDKTable/>
+                {/*{*/}
+                {/*    crossInfo.state?.arrays.SetupDK && <SetupDKTable setup={crossInfo.state?.arrays.SetupDK}/>*/}
+                {/*}*/}
             </div>
         </Box>
     )

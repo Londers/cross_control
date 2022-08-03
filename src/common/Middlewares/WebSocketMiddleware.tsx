@@ -1,6 +1,8 @@
 import {createAction, createListenerMiddleware, isAnyOf} from "@reduxjs/toolkit";
-import {CrossControlInfoMsg, IncomingWebSocketMessage, OutcomingWebSocketMessage} from "../index";
-import {setInitialData} from "../../features/crossInfoSlice";
+import {CrossControlInfoMsg, IncomingWebSocketMessage, OutcomingWebSocketMessage, State} from "../index";
+import {setCrossInfo} from "../../features/crossInfoSlice";
+import {setStateSave} from "../../features/stateSaveSlice";
+
 // import {
 //     ChangeEditMsg,
 //     CrossBuildMsg, CrossConnectionMsg, CrossUpdateMsg, DispatchMsg,
@@ -38,7 +40,8 @@ WebSocketListenerMiddleware.startListening({
         } else if (wsGetMessage.match(action)) {
             switch (action.payload.type) {
                 case "controlInfo":
-                    listenerApi.dispatch(setInitialData(action.payload.data as CrossControlInfoMsg))
+                    listenerApi.dispatch(setCrossInfo(action.payload.data as CrossControlInfoMsg))
+                    listenerApi.dispatch(setStateSave(action.payload.data.state as State))
                     break;
                 // case "crossBuild":
                 //     listenerApi.dispatch(setInitialData(action.payload.data as CrossBuildMsg))

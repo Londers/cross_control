@@ -1,38 +1,90 @@
 import React from "react";
-import {SetupDK} from "../../common";
-import {useAppDispatch} from "../../app/hooks";
-import {setSetupDk} from "../crossInfoSlice";
-import {DataGrid, GridColumns, GridRowsProp} from "@mui/x-data-grid";
+import {useAppDispatch, useAppSelector} from "../../app/hooks";
+import {selectSetupDk, setSetupDk} from "../crossInfoSlice";
+import {
+    DataGrid,
+    GridColumns,
+    GridPreProcessEditCellProps,
+    GridRowsProp,
+    ruRU
+} from "@mui/x-data-grid";
 
-const columns: GridColumns = [
-    {field: "dkn", headerName: "№ ДК", type: 'number', editable: true},
-    {field: "dktype", headerName: "Тип ДК", type: 'number', editable: true},
-    {field: "tminf", headerName: "Т мин см фаз", type: 'number', editable: true},
-    {field: "tmaxf", headerName: "Т мах см фаз", type: 'number', editable: true},
-    {field: "tprom", headerName: "Т мах Т пр", type: 'number', editable: true},
-    {field: "tminmax", headerName: "Т мах Т мин", type: 'number', editable: true},
-]
+const defaultColumnOptions = {
+    type: "number",
+    editable: true,
+    flex: 1,
+}
 
-function SetupDKTable(props: {setup: SetupDK}) {
+
+function SetupDKTable() {
+    const dispatch = useAppDispatch()
+    const setup = useAppSelector(selectSetupDk)
+
+    const columns: GridColumns = [
+        {
+            field: "dkn", headerName: "№ ДК", headerAlign: "center", align: "center",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                dispatch(setSetupDk({...setup, dkn: params.props.value}))
+                return {...params.props};
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "dktype", headerName: "Тип ДК", headerAlign: "center", align: "center",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                dispatch(setSetupDk({...setup, dktype: params.props.value}))
+                return {...params.props};
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "tminf", headerName: "Т мин см фаз", headerAlign: "center", align: "center",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                dispatch(setSetupDk({...setup, tminf: params.props.value}))
+                return {...params.props};
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "tmaxf", headerName: "Т мах см фаз", headerAlign: "center", align: "center",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                dispatch(setSetupDk({...setup, tmaxf: params.props.value}))
+                return {...params.props};
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "tprom", headerName: "Т мах Т пр", headerAlign: "center", align: "center",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                dispatch(setSetupDk({...setup, tprom: params.props.value}))
+                return {...params.props};
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "tminmax", headerName: "Т мах Т мин", headerAlign: "center", align: "center",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                dispatch(setSetupDk({...setup, tminmax: params.props.value}))
+                return {...params.props};
+            },
+            ...defaultColumnOptions
+        },
+    ]
 
     const rows: GridRowsProp = [{
         id: 1,
-        ...props.setup
+        ...setup
     }]
 
-    const dispatch = useAppDispatch()
-
-    const handleSetupDKChange = () => {
-        dispatch(setSetupDk(props.setup))
-    }
 
     return (
-        <div style={{ height: "110px", width: '38rem', marginInline: "auto" }}>
+        <div style={{height: "110px", width: "57rem", marginInline: "auto"}}>
             <DataGrid
-                // onCellEditStop={(e) => console.log(e)}
+                localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 rows={rows}
                 columns={columns}
-                experimentalFeatures={{ newEditingApi: true }}
+                experimentalFeatures={{newEditingApi: true}}
+                disableColumnMenu
                 hideFooter
             />
         </div>

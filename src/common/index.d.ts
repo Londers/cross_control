@@ -97,7 +97,7 @@ export interface St {
     dt: number;
 }
 
-export interface Dk {
+export interface Pk {
     dk: number;
     pk: number;
     desc: string;
@@ -110,7 +110,7 @@ export interface Dk {
 }
 
 export interface SetDK {
-    dk: Dk[];
+    dk: Pk[];
 }
 
 export interface Monthset {
