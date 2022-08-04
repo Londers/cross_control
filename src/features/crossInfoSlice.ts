@@ -1,4 +1,4 @@
-import {CrossControlInfoMsg, SetupDK, State} from "../common";
+import {CrossControlInfoMsg, Pk, SetupDK, State} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
 
@@ -85,6 +85,9 @@ export const crossInfoSlice = createSlice({
         setSetupDk: (state, action: PayloadAction<SetupDK>) => {
             if (state.state) state.state.arrays.SetupDK = action.payload
         },
+        setPk: (state, action: PayloadAction<{num: number, pk: Pk}>) => {
+            if (state.state) Object.assign(state.state.arrays.SetDK.dk[action.payload.num], action.payload.pk)
+        },
     }
 })
 
@@ -106,6 +109,7 @@ export const {
     setJournal,
     setNogprs,
     setSetupDk,
+    setPk,
 } = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo

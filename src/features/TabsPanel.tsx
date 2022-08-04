@@ -44,6 +44,7 @@ function a11yProps(index: number) {
 function TabsPanel() {
     const [value, setValue] = React.useState(1)
     const [pk, setPk] = React.useState(1)
+    const [sk, setSk] = React.useState(1)
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
@@ -52,7 +53,7 @@ function TabsPanel() {
     return (
         <Box sx={{width: "99%", height: "90vh", border: ".5px solid"}}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
-                <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                <Tabs value={value} onChange={handleChange} aria-label="tabs">
                     <Tab label="Основные" {...a11yProps(0)} />
                     <Tab label="Планы координации" {...a11yProps(1)} />
                     <Tab label="Суточные карты" {...a11yProps(2)} />
@@ -69,7 +70,7 @@ function TabsPanel() {
                 <PkTab pk={pk} setPk={setPk}/>
             </TabPanel>
             <TabPanel value={value} index={2}>
-                <SkTab/>
+                <SkTab sk={sk} setSk={setSk}/>
             </TabPanel>
             <TabPanel value={value} index={3}>
                 <NkTab/>

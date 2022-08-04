@@ -15,7 +15,6 @@ const defaultColumnOptions = {
     flex: 1,
 }
 
-
 function SetupDKTable() {
     const dispatch = useAppDispatch()
     const setup = useAppSelector(selectSetupDk)
