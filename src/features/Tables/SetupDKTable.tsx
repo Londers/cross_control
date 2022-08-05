@@ -13,6 +13,7 @@ const defaultColumnOptions = {
     type: "number",
     editable: true,
     flex: 1,
+    sortable: false,
 }
 
 function SetupDKTable() {

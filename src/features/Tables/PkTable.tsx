@@ -4,10 +4,11 @@ import {Pk} from "../../common";
 
 const defaultColumnOptions = {
     flex: 1,
+    sortable: false,
 }
 
 const columns: GridColumns = [
-    {field: "line", headerName: "№ перекл.", ...defaultColumnOptions},
+    {field: "line", headerName: "№ перекл.", ...defaultColumnOptions,},
     {field: "start", headerName: "Вр. вкл", ...defaultColumnOptions},
     {field: "tf", headerName: "Тип фазы", ...defaultColumnOptions},
     {field: "num", headerName: "№ фазы", ...defaultColumnOptions},
@@ -29,7 +30,9 @@ function PkTable(props: { currentPk: Pk | undefined, currentRow: number, setCurr
                 rows={rows}
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
+                disableColumnFilter
                 hideFooter
+
             />}
         </div>
     )

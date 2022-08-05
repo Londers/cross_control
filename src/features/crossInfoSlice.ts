@@ -85,9 +85,16 @@ export const crossInfoSlice = createSlice({
         setSetupDk: (state, action: PayloadAction<SetupDK>) => {
             if (state.state) state.state.arrays.SetupDK = action.payload
         },
-        setPk: (state, action: PayloadAction<{num: number, pk: Pk}>) => {
+        setPk: (state, action: PayloadAction<{ num: number, pk: Pk }>) => {
             if (state.state) Object.assign(state.state.arrays.SetDK.dk[action.payload.num], action.payload.pk)
         },
+        setIte: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.arrays.SetTimeUse.ite = action.payload
+        },
+        setPeriod: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
+        },
+
     }
 })
 
@@ -110,6 +117,8 @@ export const {
     setNogprs,
     setSetupDk,
     setPk,
+    setIte,
+    setPeriod,
 } = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo

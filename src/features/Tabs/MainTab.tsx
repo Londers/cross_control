@@ -42,7 +42,6 @@ function MainTab() {
 
     const dispatch = useAppDispatch()
     const crossInfo = useAppSelector(selectCrossInfo)
-    // const savedState = useAppSelector(selectStateSave)
 
     const handleReloadTabClick = () => {
         dispatch(reloadMainTab())

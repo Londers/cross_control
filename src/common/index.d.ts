@@ -113,22 +113,22 @@ export interface SetDK {
     dk: Pk[];
 }
 
-export interface Monthset {
+export interface Gk {
     num: number;
     days: number[];
 }
 
 export interface MonthSets {
-    monthset: Monthset[];
+    monthset: Gk[];
 }
 
-export interface Wset {
+export interface Nk {
     num: number;
     days: number[];
 }
 
 export interface WeekSets {
-    wsets: Wset[];
+    wsets: Nk[];
 }
 
 export interface Line {
@@ -137,14 +137,14 @@ export interface Line {
     min: number;
 }
 
-export interface Dayset {
+export interface Sk {
     num: number;
     count: number;
     lines: Line[];
 }
 
 export interface DaySets {
-    daysets: Dayset[];
+    daysets: Sk[];
 }
 
 export interface Start {

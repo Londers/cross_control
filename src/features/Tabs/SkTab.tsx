@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
 import {useAppSelector} from "../../app/hooks";
 import {selectCrossInfo} from "../crossInfoSlice";
@@ -8,13 +8,16 @@ import MinusIcon from "../../common/icons/MinusIcon";
 import InsertIcon from "../../common/icons/InsertIcon";
 import ReloadIcon from "../../common/icons/ReloadIcon";
 import CreateIcon from "../../common/icons/CreateIcon";
+import SkTable from "../Tables/SkTable";
 
 function SkTab(props: { sk: number, setSk: Function }) {
     const width = 40
     const height = 40
 
     const crossInfo = useAppSelector(selectCrossInfo)
-    const currentSk = crossInfo.state?.arrays.DaySets.daysets[0]
+    const currentSk = crossInfo.state?.arrays.DaySets.daysets[props.sk - 1]
+
+    const [selectedRow, setSelectedRow] = useState<number>(1)
 
     const handleSkSelectChange = (event: SelectChangeEvent<number>) => props.setSk(Number(event.target.value))
 
@@ -31,28 +34,32 @@ function SkTab(props: { sk: number, setSk: Function }) {
                         onChange={handleSkSelectChange}
                     >
                         {currentSk && crossInfo.state?.arrays.DaySets.daysets.map(sk =>
-                            <MenuItem value={sk.num} key={sk.num}>СК {sk.num}</MenuItem>
+                            <MenuItem value={sk.num} key={sk.num}>{sk.num}</MenuItem>
                         )}
                     </Select>
                 </FormControl>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Добавить строку">
                     <PlusIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Удалить строку">
                     <MinusIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Копировать">
                     <CopyIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Вставить">
                     <InsertIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Загрузить">
                     <ReloadIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Создать">
                     <CreateIcon width={width} height={height}/>
                 </Button>
+            </div>
+            <br />
+            <div>
+                <SkTable currentSk={currentSk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>
             </div>
         </Box>
     )
