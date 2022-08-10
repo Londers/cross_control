@@ -32,6 +32,7 @@ function ControlButtons() {
                 <ForceSendIcon width={width} height={height}/>
             </Button>
             <Button variant="outlined" title="Проверить корректность массивов">
+                {/*TODO: заполнить суточные карты с заменой 24 на 0 в последних строках. !Перед отправкой!*/}
                 Проверка
             </Button>
             <Button variant="outlined" title="Получить справку по странице">

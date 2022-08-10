@@ -17,13 +17,13 @@ function KvTab() {
     return (
         <Box style={{border: ".5px solid"}}>
             <div style={{display: "inline-flex", marginTop: "1rem"}}>
-            <Button variant="outlined" title="Копировать ПК">
+            <Button variant="outlined" title="Копировать">
                 <CopyIcon width={width} height={height}/>
             </Button>
-            <Button variant="outlined" title="Вставить ПК">
+            <Button variant="outlined" title="Вставить">
                 <InsertIcon width={width} height={height}/>
             </Button>
-            <Button variant="outlined" title="Загрузить ПК">
+            <Button variant="outlined" title="Загрузить">
                 <ReloadIcon width={width} height={height}/>
             </Button>
             </div>

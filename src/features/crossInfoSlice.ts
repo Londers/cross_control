@@ -1,4 +1,4 @@
-import {CrossControlInfoMsg, Pk, SetupDK, State} from "../common";
+import {CrossControlInfoMsg, Pk, SetupDK, Sk, State} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
 
@@ -94,7 +94,9 @@ export const crossInfoSlice = createSlice({
         setPeriod: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
         },
-
+        setSk: (state, action: PayloadAction<{ sk: Sk, num: number }>) => {
+            if (state.state) state.state.arrays.DaySets.daysets[action.payload.num] = action.payload.sk
+        },
     }
 })
 
@@ -119,6 +121,7 @@ export const {
     setPk,
     setIte,
     setPeriod,
+    setSk,
 } = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo

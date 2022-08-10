@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import {Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
 import {useAppSelector} from "../../app/hooks";
 import {selectCrossInfo} from "../crossInfoSlice";
@@ -17,7 +17,7 @@ function SkTab(props: { sk: number, setSk: Function }) {
     const crossInfo = useAppSelector(selectCrossInfo)
     const currentSk = crossInfo.state?.arrays.DaySets.daysets[props.sk - 1]
 
-    const [selectedRow, setSelectedRow] = useState<number>(1)
+    // const [selectedRow, setSelectedRow] = useState<number>(1)
 
     const handleSkSelectChange = (event: SelectChangeEvent<number>) => props.setSk(Number(event.target.value))
 
@@ -59,7 +59,8 @@ function SkTab(props: { sk: number, setSk: Function }) {
             </div>
             <br />
             <div>
-                <SkTable currentSk={currentSk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>
+                <SkTable skNum={props.sk} currentSk={currentSk} />
+                {/*<SkTable skNum={props.sk} currentSk={currentSk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>*/}
             </div>
         </Box>
     )

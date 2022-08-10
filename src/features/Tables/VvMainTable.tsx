@@ -13,7 +13,7 @@ const columns: GridColumns = [
     {field: "type", headerName: "Тип стат.", type: "number", ...defaultColumnOptions},
     {field: "tvps", headerName: "ТВП1,2, МГР, ВПУ", type: "number", ...defaultColumnOptions},
     {field: "dk", headerName: "№ ДК", type: "number", ...defaultColumnOptions},
-    {field: "fazes", headerName: "Фазы", type: "string", ...defaultColumnOptions},
+    {field: "fazes", headerName: "Фазы", type: "string", headerAlign: "right", align: "right", ...defaultColumnOptions},
     {field: "long", headerName: "Интервал", type: "number", ...defaultColumnOptions},
 ]
 
