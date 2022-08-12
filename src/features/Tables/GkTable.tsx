@@ -1,6 +1,8 @@
 import React from "react";
-import {DataGrid, GridColumns, ruRU} from "@mui/x-data-grid";
+import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {Gk} from "../../common";
+import {useAppDispatch} from "../../app/hooks";
+import {updateGk} from "../crossInfoSlice";
 
 const defaultColumnOptions = {
     flex: 1,
@@ -12,17 +14,32 @@ const columns: GridColumns = [
     {field: "pageNum", headerName: "месяц", flex: 15, editable: false, sortable: false,},
 ]
 
-for (let i = 0; i < 31; i++) {
-    columns.push({...defaultColumnOptions, field: i.toString(), headerName: (i + 1).toString()})
-}
-
 function GkTable(props: { currentGk: Gk[] | undefined }) {
+    const dispatch = useAppDispatch()
+    const changeGk = (gk: number, day: number, value: number) => {
+        dispatch(updateGk({gk, day, value}))
+    }
 
-    const rows = props.currentGk?.map((nk, index) => {
+    (() => {
+        if (columns.length !== 1) return
+        for (let i = 0; i < 31; i++) {
+            columns.push({
+                ...defaultColumnOptions,
+                field: i.toString(),
+                headerName: (i + 1).toString(),
+                preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                    changeGk(params.row.pageNum - 1, i, Number(params.props.value))
+                    return {...params.props}
+                }
+            })
+        }
+    })()
+
+    const rows = props.currentGk?.map((gk, index) => {
         return {
             id: index,
             pageNum: index + 1,
-            ...nk.days
+            ...gk.days
         }
     })
 

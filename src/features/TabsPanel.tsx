@@ -34,7 +34,7 @@ function TabPanel(props: TabPanelProps) {
     );
 }
 
-function a11yProps(index: number) {
+function allyProps(index: number) {
     return {
         id: `simple-tab-${index}`,
         'aria-controls': `simple-tabpanel-${index}`,
@@ -42,7 +42,7 @@ function a11yProps(index: number) {
 }
 
 function TabsPanel() {
-    const [value, setValue] = React.useState(5)
+    const [value, setValue] = React.useState(6)
     const [pk, setPk] = React.useState(1)
     const [sk, setSk] = React.useState(1)
 
@@ -54,13 +54,13 @@ function TabsPanel() {
         <Box sx={{width: "99%", height: "90vh", border: ".5px solid"}}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={value} onChange={handleChange} aria-label="tabs">
-                    <Tab label="Основные" {...a11yProps(0)} />
-                    <Tab label="Планы координации" {...a11yProps(1)} />
-                    <Tab label="Суточные карты" {...a11yProps(2)} />
-                    <Tab label="Недельные карты" {...a11yProps(3)} />
-                    <Tab label="Карта года" {...a11yProps(4)} />
-                    <Tab label="Внешние входы" {...a11yProps(5)} />
-                    <Tab label="Контроль входов" {...a11yProps(6)} />
+                    <Tab label="Основные" {...allyProps(0)} />
+                    <Tab label="Планы координации" {...allyProps(1)} />
+                    <Tab label="Суточные карты" {...allyProps(2)} />
+                    <Tab label="Недельные карты" {...allyProps(3)} />
+                    <Tab label="Карта года" {...allyProps(4)} />
+                    <Tab label="Внешние входы" {...allyProps(5)} />
+                    <Tab label="Контроль входов" {...allyProps(6)} />
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>

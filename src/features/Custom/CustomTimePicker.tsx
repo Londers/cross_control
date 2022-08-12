@@ -4,7 +4,7 @@ import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFns";
 import {TimePicker} from "@mui/x-date-pickers/TimePicker";
 import {TextField} from "@mui/material";
 
-function CustomTimePicker(props: { date: Date, setDate: Function | null, min: Date | null, disabled: boolean }) {
+function CustomTimePicker(props: { date: Date, setDate: Function | null, disabled: boolean }) {
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <TimePicker
@@ -13,7 +13,7 @@ function CustomTimePicker(props: { date: Date, setDate: Function | null, min: Da
                 onChange={(newValue) => {
                     if (props.setDate) props.setDate(newValue);
                 }}
-                minTime={props.min}
+                // minTime={props.min}
                 disabled={props.disabled}
                 renderInput={(params) => <TextField {...params} />}
             />

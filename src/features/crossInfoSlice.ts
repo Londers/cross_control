@@ -1,4 +1,4 @@
-import {CrossControlInfoMsg, Pk, SetupDK, Sk, State} from "../common";
+import {CrossControlInfoMsg, CustomTimestamp, Line, Pk, SetupDK, Sk, State, Use} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
 
@@ -94,8 +94,41 @@ export const crossInfoSlice = createSlice({
         setPeriod: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
         },
-        setSk: (state, action: PayloadAction<{ sk: Sk, num: number }>) => {
-            if (state.state) state.state.arrays.DaySets.daysets[action.payload.num] = action.payload.sk
+        updateSkLine: (state, action: PayloadAction<{ skNum: number, lineNum: number, line: Line }>) => {
+            if (state.state) {
+                state.state.arrays.DaySets.daysets[action.payload.skNum].lines[action.payload.lineNum] = action.payload.line
+                state.state.arrays.DaySets.daysets[action.payload.skNum].count =
+                    state.state.arrays.DaySets.daysets[action.payload.skNum].lines.filter(line => line.npk !== 0).length
+            }
+        },
+        // updateSkNpk: (state, action: PayloadAction<{ skNum: number, lineNum: number, value: number }>) => {
+        //     if (state.state) {
+        //         state.state.arrays.DaySets.daysets[action.payload.skNum].lines[action.payload.lineNum].npk = action.payload.value
+        //     }
+        // },
+        updateNk: (state, action: PayloadAction<{ nk: number, day: number, value: number }>) => {
+            if (state.state) state.state.arrays.WeekSets.wsets[action.payload.nk].days[action.payload.day] = action.payload.value
+        },
+        updateGk: (state, action: PayloadAction<{ gk: number, day: number, value: number }>) => {
+            if (state.state) state.state.arrays.MonthSets.monthset[action.payload.gk].days[action.payload.day] = action.payload.value
+        },
+        updateTimeUse: (state, action: PayloadAction<{ id: number, use: Use }>) => {
+            if (state.state) state.state.arrays.SetTimeUse.uses[action.payload.id] = action.payload.use
+        },
+        updateNotwork: (state, action: PayloadAction<{ id: number, value: number }>) => {
+            if (state.state) state.state.arrays.SetTimeUse.notwork[action.payload.id] = action.payload.value
+        },
+        updateKvTime: (state, action: PayloadAction<{id: number, value: CustomTimestamp}>) => {
+            if (state.state) {
+                state.state.arrays.SetCtrl.Stage[action.payload.id].end = action.payload.value
+                if (state.state.arrays.SetCtrl.Stage[action.payload.id + 1]) state.state.arrays.SetCtrl.Stage[action.payload.id + 1].start = action.payload.value
+            }
+        },
+        updateKvTVP: (state, action: PayloadAction<{ id: number, value: number }>) => {
+            if (state.state) state.state.arrays.SetCtrl.Stage[action.payload.id].lenTVP = action.payload.value
+        },
+        updateKvMGR: (state, action: PayloadAction<{ id: number, value: number }>) => {
+            if (state.state) state.state.arrays.SetCtrl.Stage[action.payload.id].lenMGR = action.payload.value
         },
     }
 })
@@ -121,7 +154,14 @@ export const {
     setPk,
     setIte,
     setPeriod,
-    setSk,
+    updateSkLine,
+    updateNk,
+    updateGk,
+    updateTimeUse,
+    updateNotwork,
+    updateKvTime,
+    updateKvTVP,
+    updateKvMGR,
 } = crossInfoSlice.actions
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo

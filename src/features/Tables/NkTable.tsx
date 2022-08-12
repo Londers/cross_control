@@ -1,6 +1,8 @@
 import React from "react";
-import {DataGrid, GridColumns, ruRU} from "@mui/x-data-grid";
+import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {Nk} from "../../common";
+import {useAppDispatch} from "../../app/hooks";
+import {updateNk} from "../crossInfoSlice";
 
 const defaultColumnOptions = {
     flex: 1,
@@ -8,18 +10,73 @@ const defaultColumnOptions = {
     sortable: false,
 }
 
-const columns: GridColumns = [
-    {field: "pageNum", headerName: "№ нед. карты", ...defaultColumnOptions, flex: 2, editable: false},
-    {field: "monday", headerName: "пн.", ...defaultColumnOptions},
-    {field: "tuesday", headerName: "вт.", ...defaultColumnOptions},
-    {field: "wednesday", headerName: "ср.", ...defaultColumnOptions},
-    {field: "thursday", headerName: "чт.", ...defaultColumnOptions},
-    {field: "friday", headerName: "пт.", ...defaultColumnOptions},
-    {field: "saturday", headerName: "сб.", ...defaultColumnOptions},
-    {field: "sunday", headerName: "вс.", ...defaultColumnOptions},
-]
 
 function NkTable(props: { currentNk: Nk[] | undefined }) {
+    const dispatch = useAppDispatch()
+    const changeNk = (nk: number, day: number, value: number) => {
+        if (value === 0) value = 1
+        dispatch(updateNk({nk, day, value}))
+    }
+
+    const columns: GridColumns = [
+        {field: "pageNum", headerName: "№ нед. карты", ...defaultColumnOptions, flex: 2, editable: false},
+        {
+            field: "monday", headerName: "пн.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 0, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "tuesday", headerName: "вт.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 1, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "wednesday", headerName: "ср.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 2, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "thursday", headerName: "чт.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 3, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "friday", headerName: "пт.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 4, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "saturday", headerName: "сб.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 5, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+        {
+            field: "sunday", headerName: "вс.",
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeNk(params.row.pageNum - 1, 6, Number(params.props.value))
+                return {...params.props}
+            },
+            ...defaultColumnOptions
+        },
+    ]
 
     const rows = props.currentNk?.map((nk, index) => {
         return {

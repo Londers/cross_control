@@ -1,29 +1,79 @@
 import React from "react";
-import { Stage } from "../../common";
-import {DataGrid, GridColumns, ruRU} from "@mui/x-data-grid";
+import {CustomTimestamp, Stage} from "../../common";
+import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
+import CustomTimePicker from "../Custom/CustomTimePicker";
+import {useAppDispatch} from "../../app/hooks";
+import {updateKvMGR, updateKvTime, updateKvTVP} from "../crossInfoSlice";
 
 const defaultColumnOptions = {
     flex: 1,
-    editable: true,
-    sortable: false,
+    editable: false,
 }
 
-const columns: GridColumns = [
-    {field: "line", headerName: "№ стр.", flex: 1, editable: false, sortable: false,},
-    {field: "kvStart", headerName: "Т начала", type: "string", ...defaultColumnOptions},
-    {field: "kvEnd", headerName: "Т конца интервала", type: "string", ...defaultColumnOptions},
-    {field: "lenTVP", headerName: "T конт ТВП", type: "number", ...defaultColumnOptions},
-    {field: "lenMGR", headerName: "T конт МГР", type: "number", ...defaultColumnOptions},
-]
+function KvTable(props: { Stages: Stage[] | undefined }) {
+    const dispatch = useAppDispatch()
+    const changeKvTime = (id: number, value: CustomTimestamp) => {
+        dispatch(updateKvTime({id, value}))
+    }
+    const changeKvTVP = (id: number, value: number) => {
+        dispatch(updateKvTVP({id, value}))
+    }
+    const changeKvMGR = (id: number, value: number) => {
+        dispatch(updateKvMGR({id, value}))
+    }
 
-function KvTable(props: {Stages: Stage[] | undefined}) {
+    const columns: GridColumns = [
+        {field: "line", headerName: "№ стр.", flex: 1},
+        {
+            field: "kvStart",
+            headerName: "Т начала",
+            type: "string",
+            ...defaultColumnOptions,
+            renderCell: (params) =>
+                <CustomTimePicker date={params.value} setDate={null} disabled={true}/>
+        },
+        {
+            field: "kvEnd",
+            headerName: "Т конца интервала",
+            type: "string",
+            ...defaultColumnOptions,
+            renderCell: (params) =>
+                <CustomTimePicker date={params.value}
+                                  setDate={(e: Date) => {
+                                      changeKvTime(Number(params.id), {hour: e.getHours(), min: e.getMinutes()})
+                                  }}
+                                  disabled={false}/>
+        },
+        {
+            field: "lenTVP",
+            headerName: "T конт ТВП",
+            type: "number",
+            ...defaultColumnOptions,
+            editable: true,
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeKvTVP(Number(params.id), Number(params.props.value))
+                return {...params.props};
+            },
+        },
+        {
+            field: "lenMGR",
+            headerName: "T конт МГР",
+            type: "number",
+            ...defaultColumnOptions,
+            editable: true,
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                changeKvMGR(Number(params.id), Number(params.props.value))
+                return {...params.props};
+            },
+        },
+    ]
 
     const rows = props.Stages?.map((stage, index) => {
         return {
             id: index,
             line: index + 1,
-            kvStart: Object.values(stage.start).join(":"),
-            kvEnd: Object.values(stage.end).join(":"),
+            kvStart: new Date(0, 0, 0, stage.start.hour, stage.start.min),
+            kvEnd: new Date(0, 0, 0, stage.end.hour, stage.end.min),
             lenTVP: stage.lenTVP,
             lenMGR: stage.lenMGR,
         }

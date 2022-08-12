@@ -147,20 +147,15 @@ export interface DaySets {
     daysets: Sk[];
 }
 
-export interface Start {
-    hour: number;
-    min: number;
-}
-
-export interface End {
+export interface CustomTimestamp {
     hour: number;
     min: number;
 }
 
 export interface Stage {
     line: number;
-    start: Start;
-    end: End;
+    start: CustomTimestamp;
+    end: CustomTimestamp;
     lenTVP: number;
     lenMGR: number;
 }
@@ -169,7 +164,7 @@ export interface SetCtrl {
     Stage: Stage[];
 }
 
-export interface Us {
+export interface Use {
     name: string;
     type: number;
     tvps: number;
@@ -179,7 +174,7 @@ export interface Us {
 }
 
 export interface SetTimeUse {
-    uses: Us[];
+    uses: Use[];
     ite: number;
     notwork: number[];
 }
