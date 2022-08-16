@@ -1,4 +1,4 @@
-import {CrossControlInfoMsg, CustomTimestamp, Line, Pk, SetupDK, Sk, State, Use} from "../common";
+import {CrossControlInfoMsg, CustomTimestamp, Gk, Line, Nk, Pk, SetupDK, Sk, Stage, State, Use} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
 
@@ -21,6 +21,7 @@ export const crossInfoSlice = createSlice({
         setState: (state, action: PayloadAction<State>) => {
             state.state = action.payload
         },
+        // main tab
         setDeviceType: (state, action: PayloadAction<number>) => {
             if (state.state) {
                 state.state.arrays.type = action.payload
@@ -85,6 +86,8 @@ export const crossInfoSlice = createSlice({
         setSetupDk: (state, action: PayloadAction<SetupDK>) => {
             if (state.state) state.state.arrays.SetupDK = action.payload
         },
+
+        // pk tab
         setPk: (state, action: PayloadAction<{ num: number, pk: Pk }>) => {
             if (state.state) Object.assign(state.state.arrays.SetDK.dk[action.payload.num], action.payload.pk)
         },
@@ -94,6 +97,14 @@ export const crossInfoSlice = createSlice({
         setPeriod: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
         },
+
+        // sk tab
+        updateSk: (state, action: PayloadAction<{ skNum: number, sk: Sk }>) => {
+            if (state.state) {
+                state.state.arrays.DaySets.daysets[action.payload.skNum] = action.payload.sk
+                state.state.arrays.DaySets.daysets[action.payload.skNum].num = action.payload.skNum + 1
+            }
+        },
         updateSkLine: (state, action: PayloadAction<{ skNum: number, lineNum: number, line: Line }>) => {
             if (state.state) {
                 state.state.arrays.DaySets.daysets[action.payload.skNum].lines[action.payload.lineNum] = action.payload.line
@@ -101,24 +112,54 @@ export const crossInfoSlice = createSlice({
                     state.state.arrays.DaySets.daysets[action.payload.skNum].lines.filter(line => line.npk !== 0).length
             }
         },
-        // updateSkNpk: (state, action: PayloadAction<{ skNum: number, lineNum: number, value: number }>) => {
-        //     if (state.state) {
-        //         state.state.arrays.DaySets.daysets[action.payload.skNum].lines[action.payload.lineNum].npk = action.payload.value
-        //     }
-        // },
+        addSkLine: (state, action: PayloadAction<{ skNum: number, lineNum: number }>) => {
+            if (state.state && action.payload.skNum !== 11) {
+                const linesCopy = [...state.state.arrays.DaySets.daysets[action.payload.skNum].lines]
+                linesCopy.pop()
+                linesCopy.splice(action.payload.lineNum, 0, linesCopy[action.payload.lineNum])
+                state.state.arrays.DaySets.daysets[action.payload.skNum].lines = linesCopy
+                state.state.arrays.DaySets.daysets[action.payload.skNum].count =
+                    state.state.arrays.DaySets.daysets[action.payload.skNum].lines.filter(line => line.npk !== 0).length
+            }
+        },
+        deleteSkLine: (state, action: PayloadAction<{ skNum: number, lineNum: number }>) => {
+            if (state.state) {
+                state.state.arrays.DaySets.daysets[action.payload.skNum].lines.splice(action.payload.lineNum, 1)
+                state.state.arrays.DaySets.daysets[action.payload.skNum].lines.push({npk: 0, hour: 0, min: 0})
+                state.state.arrays.DaySets.daysets[action.payload.skNum].count =
+                    state.state.arrays.DaySets.daysets[action.payload.skNum].lines.filter(line => line.npk !== 0).length
+            }
+        },
+
+        // nk tab
+        setNk: (state, action: PayloadAction<{ nk: Nk[] }>) => {
+            if (state.state) state.state.arrays.WeekSets.wsets = action.payload.nk
+        },
         updateNk: (state, action: PayloadAction<{ nk: number, day: number, value: number }>) => {
             if (state.state) state.state.arrays.WeekSets.wsets[action.payload.nk].days[action.payload.day] = action.payload.value
+        },
+
+        // gk tab
+        setGk: (state, action: PayloadAction<{ gk: Gk[] }>) => {
+            if (state.state) state.state.arrays.MonthSets.monthset = action.payload.gk
         },
         updateGk: (state, action: PayloadAction<{ gk: number, day: number, value: number }>) => {
             if (state.state) state.state.arrays.MonthSets.monthset[action.payload.gk].days[action.payload.day] = action.payload.value
         },
+
+        // vv tab
         updateTimeUse: (state, action: PayloadAction<{ id: number, use: Use }>) => {
             if (state.state) state.state.arrays.SetTimeUse.uses[action.payload.id] = action.payload.use
         },
         updateNotwork: (state, action: PayloadAction<{ id: number, value: number }>) => {
             if (state.state) state.state.arrays.SetTimeUse.notwork[action.payload.id] = action.payload.value
         },
-        updateKvTime: (state, action: PayloadAction<{id: number, value: CustomTimestamp}>) => {
+
+        // kv tab
+        setKv: (state, action: PayloadAction<{kv: Stage[]}>) => {
+            if (state.state) state.state.arrays.SetCtrl.Stage = action.payload.kv
+        },
+        updateKvTime: (state, action: PayloadAction<{ id: number, value: CustomTimestamp }>) => {
             if (state.state) {
                 state.state.arrays.SetCtrl.Stage[action.payload.id].end = action.payload.value
                 if (state.state.arrays.SetCtrl.Stage[action.payload.id + 1]) state.state.arrays.SetCtrl.Stage[action.payload.id + 1].start = action.payload.value
@@ -151,12 +192,23 @@ export const {
     setJournal,
     setNogprs,
     setSetupDk,
+
     setPk,
     setIte,
     setPeriod,
+
+    updateSk,
     updateSkLine,
+    addSkLine,
+    deleteSkLine,
+
+    setNk,
     updateNk,
+
+    setGk,
     updateGk,
+
+    setKv,
     updateTimeUse,
     updateNotwork,
     updateKvTime,

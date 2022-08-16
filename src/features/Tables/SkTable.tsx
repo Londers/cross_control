@@ -1,5 +1,5 @@
 import React from "react";
-import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
+import {DataGrid, GridColumns, GridPreProcessEditCellProps, GridSelectionModel, ruRU} from "@mui/x-data-grid";
 import {Line, Sk} from "../../common";
 import CustomTimePicker from "../Custom/CustomTimePicker";
 import {useAppDispatch} from "../../app/hooks";
@@ -12,7 +12,7 @@ const defaultColumnOptions = {
 }
 
 
-function SkTable(props: { skNum: number, currentSk: Sk | undefined }) {
+function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSelectionModel, setLine: Function }) {
     const dispatch = useAppDispatch()
     const changeSkLine = (lineNum: number, line: Line) => {
         dispatch(updateSkLine({skNum: props.skNum - 1, lineNum, line}))
@@ -78,6 +78,10 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined }) {
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
                 hideFooter
+                onSelectionModelChange={(newSelectionModel) => {
+                    props.setLine(newSelectionModel);
+                }}
+                selectionModel={props.line}
             />}
         </div>
     )

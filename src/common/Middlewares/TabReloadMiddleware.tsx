@@ -43,17 +43,56 @@ TabReloadMiddleware.startListening({
                 }
             ))
         } else if (reloadPkTab.match(action)) {
-
+            listenerApi.dispatch(setState(
+                {
+                    ...currentDeviceState,
+                    arrays: {
+                        ...currentDeviceState.arrays,
+                        SetDK: savedDeviceState.arrays.SetDK
+                    }
+                }
+            ))
         } else if (reloadSkTab.match(action)) {
-
+            listenerApi.dispatch(setState(
+                {
+                    ...currentDeviceState,
+                    arrays: {
+                        ...currentDeviceState.arrays,
+                        DaySets: savedDeviceState.arrays.DaySets
+                    }
+                }
+            ))
         } else if (reloadNkTab.match(action)) {
-
+            listenerApi.dispatch(setState(
+                {
+                    ...currentDeviceState,
+                    arrays: {
+                        ...currentDeviceState.arrays,
+                        WeekSets: savedDeviceState.arrays.WeekSets
+                    }
+                }
+            ))
         } else if (reloadGkTab.match(action)) {
-
+            listenerApi.dispatch(setState(
+                {
+                    ...currentDeviceState,
+                    arrays: {
+                        ...currentDeviceState.arrays,
+                        MonthSets: savedDeviceState.arrays.MonthSets
+                    }
+                }
+            ))
         } else if (reloadVvTab.match(action)) {
-
         } else if (reloadKvTab.match(action)) {
-
+            listenerApi.dispatch(setState(
+                {
+                    ...currentDeviceState,
+                    arrays: {
+                        ...currentDeviceState.arrays,
+                        SetCtrl: savedDeviceState.arrays.SetCtrl
+                    }
+                }
+            ))
         }
     }
 })
