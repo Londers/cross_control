@@ -18,6 +18,7 @@ import ReloadIcon from "../../common/icons/ReloadIcon";
 import CreateIcon from "../../common/icons/CreateIcon";
 import PkTable from "../Tables/PkTable";
 import {Pk} from "../../common";
+import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
 
 function PkTab(props: { pk: number, setPk: Function }) {
     const width = 40
@@ -28,34 +29,46 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const currentPk = crossInfo.state?.arrays.SetDK.dk[props.pk - 1]
 
     const [selectedRow, setSelectedRow] = useState<number>(1)
+    const pkFSM = new PkFiniteStateMachine(currentPk, selectedRow)
+    // const [pkFSM, setPkFSM] = useState<PkFiniteStateMachine>(new PkFiniteStateMachine(currentPk))
 
     const handlePkSelectChange = (event: SelectChangeEvent<number>) => props.setPk(Number(event.target.value))
 
     const handlePkDescChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (currentPk) changePk({...currentPk, desc: event.currentTarget.value})
+        if (currentPk) changePk(pkFSM.changeDesc(event.currentTarget.value))
+        // if (currentPk) changePk({...currentPk, desc: event.currentTarget.value})
     }
     const handlePkTcChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (currentPk) changePk({...currentPk, tc: Number(event.currentTarget.value)})
+        if (currentPk) changePk(pkFSM.changeTc(Number(event.currentTarget.value)))
+        // if (currentPk) changePk({...currentPk, tc: Number(event.currentTarget.value)})
     }
     const handlePkTwotChange = () => {
-        if (currentPk) changePk({...currentPk, twot: !currentPk.twot})
+        if (currentPk) changePk(pkFSM.changeTwot(!currentPk.twot))
+        // if (currentPk) changePk({...currentPk, twot: !currentPk.twot})
     }
     const handlePkShiftChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (currentPk) changePk({...currentPk, shift: Number(event.currentTarget.value)})
+        if (currentPk) changePk(pkFSM.changeShift(Number(event.currentTarget.value)))
+        // if (currentPk) changePk({...currentPk, shift: Number(event.currentTarget.value)})
     }
     const handlePkTypePuChange = (event: SelectChangeEvent<number>) => {
-        if (currentPk) changePk({...currentPk, tpu: Number(event.target.value)})
+        if (currentPk) changePk(pkFSM.changeTpu(Number(event.target.value)))
+        // if (currentPk) changePk({...currentPk, tpu: Number(event.target.value)})
     }
     const handlePkRazlenChange = () => {
-        if (currentPk) changePk({...currentPk, razlen: !currentPk.razlen})
+        if (currentPk) changePk(pkFSM.changeRazlen(!currentPk.razlen))
+        // if (currentPk) changePk({...currentPk, razlen: !currentPk.razlen})
     }
+
     const handlePkTransferChange = () => {
     }
 
-    const handlePkSwitchInsert = () => {
+    const handlePkSwitchInsert = (event: SelectChangeEvent<number>) => {
+        if (currentPk) changePk(pkFSM.insertLine(Number(event.target.value)))
     }
     const handlePkSwitchDelete = () => {
+        if (currentPk) changePk(pkFSM.deleteLine())
     }
+
     const handlePkEditionTypeChange = () => {
     }
 
@@ -181,7 +194,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
             </div>
             <br/>
             <div>
-                <PkTable currentPk={currentPk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>
+                {currentPk && <PkTable currentPk={currentPk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>}
             </div>
         </Box>
     )
