@@ -19,6 +19,7 @@ import CreateIcon from "../../common/icons/CreateIcon";
 import PkTable from "../Tables/PkTable";
 import {Pk} from "../../common";
 import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
+import {reloadPk} from "../../common/Middlewares/TabReloadMiddleware";
 
 function PkTab(props: { pk: number, setPk: Function }) {
     const width = 40
@@ -28,9 +29,11 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const crossInfo = useAppSelector(selectCrossInfo)
     const currentPk = crossInfo.state?.arrays.SetDK.dk[props.pk - 1]
 
-    const [selectedRow, setSelectedRow] = useState<number>(1)
-    const pkFSM = new PkFiniteStateMachine(currentPk, selectedRow)
+    const [selectedRow, setSelectedRow] = useState<number[]>([1])
+    const pkFSM = new PkFiniteStateMachine(currentPk, selectedRow[0] === 0 ? 0 : selectedRow[0] - 1)
     // const [pkFSM, setPkFSM] = useState<PkFiniteStateMachine>(new PkFiniteStateMachine(currentPk))
+
+    const [selectedInsert, setSelectedInsert] = useState<number>(-1)
 
     const handlePkSelectChange = (event: SelectChangeEvent<number>) => props.setPk(Number(event.target.value))
 
@@ -63,10 +66,16 @@ function PkTab(props: { pk: number, setPk: Function }) {
     }
 
     const handlePkSwitchInsert = (event: SelectChangeEvent<number>) => {
-        if (currentPk) changePk(pkFSM.insertLine(Number(event.target.value)))
+        if (currentPk) {
+            changePk(pkFSM.insertLine(Number(event.target.value)))
+        }
+        setSelectedInsert(-1)
     }
     const handlePkSwitchDelete = () => {
-        if (currentPk) changePk(pkFSM.deleteLine())
+        if (currentPk) {
+            if (selectedRow[0] !== 1) setSelectedRow([selectedRow[0] - 1])
+            changePk(pkFSM.deleteLine())
+        }
     }
 
     const handlePkEditionTypeChange = () => {
@@ -76,6 +85,18 @@ function PkTab(props: { pk: number, setPk: Function }) {
         if (pk) dispatch(setPk({num: props.pk - 1, pk}))
     }
 
+    const handlePkCopy = () => {
+
+    }
+    const handlePkInsert = () => {
+
+    }
+    const handlePkReload = () => {
+        dispatch(reloadPk(props.pk - 1))
+    }
+    const handlePkCreate = () => {
+
+    }
     return (
         <Box style={{border: ".5px solid"}}>
             <div style={{display: "inline-flex", marginTop: "1rem"}}>
@@ -86,16 +107,16 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     {crossInfo.state?.arrays.SetDK.dk.map(pk =>
                         <MenuItem value={pk.pk} key={pk.pk}>ПК {pk.pk}</MenuItem>)}
                 </Select>
-                <Button variant="outlined" title="Копировать ПК">
+                <Button variant="outlined" title="Копировать ПК" onClick={handlePkCopy}>
                     <CopyIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Вставить ПК">
+                <Button variant="outlined" title="Вставить ПК" onClick={handlePkInsert}>
                     <InsertIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Загрузить ПК">
+                <Button variant="outlined" title="Загрузить ПК" onClick={handlePkReload}>
                     <ReloadIcon width={width} height={height}/>
                 </Button>
-                <Button variant="outlined" title="Создать ПК">
+                <Button variant="outlined" title="Создать ПК" onClick={handlePkCreate}>
                     <CreateIcon width={width} height={height}/>
                 </Button>
             </div>
@@ -161,7 +182,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
             </div>
             <br/>
             <div>
-                <Select onChange={handlePkSwitchInsert} defaultValue={-1}>
+                <Select onChange={handlePkSwitchInsert} value={selectedInsert}>
                     <MenuItem value={-1} key={0}>Вставить перекл.</MenuItem>)
                     <MenuItem value={0} key={1}> </MenuItem>)
                     <MenuItem value={1} key={2}>МГР</MenuItem>)
@@ -194,7 +215,9 @@ function PkTab(props: { pk: number, setPk: Function }) {
             </div>
             <br/>
             <div>
-                {currentPk && <PkTable currentPk={currentPk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>}
+                {currentPk && <PkTable currentPk={currentPk} pkNum={props.pk} currentRow={selectedRow[0]}
+                                       setCurrentRow={setSelectedRow}
+                                       pkFSM={pkFSM}/>}
             </div>
         </Box>
     )

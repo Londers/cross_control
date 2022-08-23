@@ -1,7 +1,10 @@
 import React from "react";
-import {DataGrid, GridColumns, ruRU} from "@mui/x-data-grid";
-import {Pk} from "../../common";
+import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
+import {Pk, St} from "../../common";
 import {Checkbox, FormControlLabel, MenuItem, Select} from "@mui/material";
+import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
+import {setPk} from "../crossInfoSlice";
+import {useAppDispatch} from "../../app/hooks";
 
 const defaultColumnOptions = {
     flex: 1,
@@ -9,7 +12,15 @@ const defaultColumnOptions = {
     editable: true,
 }
 
-function PkTable(props: { currentPk: Pk, currentRow: number, setCurrentRow: Function }) {
+function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setCurrentRow: Function, pkFSM: PkFiniteStateMachine }) {
+    const dispatch = useAppDispatch()
+    const changePk = (pk: Pk) => {
+        if (props.currentPk) dispatch(setPk({num: props.pkNum - 1, pk}))
+    }
+
+    const calcDurationDiff = (newDuration: number) => {
+        return newDuration - (props.currentPk.sts[props.currentRow - 1].stop - props.currentPk.sts[props.currentRow - 1].start + props.currentPk.sts[props.currentRow - 1].dt)
+    }
 
     const columns: GridColumns = [
         {field: "line", headerName: "№ перекл.", ...defaultColumnOptions,},
@@ -35,7 +46,16 @@ function PkTable(props: { currentPk: Pk, currentRow: number, setCurrentRow: Func
             }
         },
         {field: "num", headerName: "№ фазы", ...defaultColumnOptions},
-        {field: "duration", headerName: "Длительность", ...defaultColumnOptions},
+        {
+            field: "duration",
+            headerName: "Длительность",
+            ...defaultColumnOptions,
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                if (props.currentPk) changePk(props.pkFSM.changeDuration(calcDurationDiff(Number(params.props.value))))
+                // changeSkLine(Number(params.id), {...props.currentSk.lines[Number(params.id)], npk: Number(params.props.value)})
+                return {...params.props};
+            },
+        },
         {
             field: "plus",
             headerName: "+пред.",
@@ -55,8 +75,16 @@ function PkTable(props: { currentPk: Pk, currentRow: number, setCurrentRow: Func
         },
     ]
 
-    const rows = props.currentPk.sts.map(sw => {
-        return {id: sw.line, ...sw, duration: sw.stop - sw.start + (sw.trs ? sw.dt : 0)}
+    const calcDuration = (st: St) => {
+        if (st.trs) {
+            return props.currentPk.tc - st.start + st.dt
+        } else {
+            return st.stop - st.start
+        }
+    }
+
+    const rows = props.currentPk.sts.map(st => {
+        return {id: st.line, ...st, duration: calcDuration(st)}
     })
 
     return (
