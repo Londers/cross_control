@@ -14,6 +14,7 @@ export class PkFiniteStateMachine implements Pk {
     razlen: boolean;
     shift: number;
     private _sts: St[];
+    lineSegment!: number[];
     tc: number;
     tpu: number;
     twot: boolean;
@@ -27,10 +28,11 @@ export class PkFiniteStateMachine implements Pk {
         this.shift = pk?.shift ?? 0;
         this._sts = pk?.sts ?? [];
         this.tc = pk?.tc ?? 0;
+        this.convertStsToLine()
         this.tpu = pk?.tpu ?? 0;
         this.twot = pk?.twot ?? false;
+
         this.pointer = new Pointer(pointer, 12)
-        // this.pointer = new Pointer(pointer, this.getLinesCount())
     }
 
     set pointer(value: Pointer) {
@@ -39,6 +41,72 @@ export class PkFiniteStateMachine implements Pk {
 
     get pointer(): Pointer {
         return this._pointer;
+    }
+
+    convertStsToLine = () => {
+        if (this.sts.length === 0) return []
+        const line: number[] = [this.sts[0].start]
+        let overlap = false
+        this.sts.forEach(st => {
+            if ((st.start !== st.stop) || (st.dt !== 0)) {
+                if (st.dt !== 0) {
+                    overlap = true
+                    line.push(st.stop + st.dt)
+                } else if ((st.start === 0) && (this.shift !== 0)) {
+                    overlap = true
+                    line.push(st.stop + this.tc)
+                } else if (overlap) {
+                    line.push(st.stop + this.tc)
+                } else {
+                    line.push(st.stop)
+                }
+            }
+        })
+        this.lineSegment = line
+        console.log(this.sts)
+        console.log(this.lineSegment)
+    }
+
+    convertLineToSts(size: number, type?: number): St[] {
+        // const size = this.getLinesCount()
+        const sts = Array.from({length: 12}, (v, i) => {
+            return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
+        })
+        sts[0].start = this.lineSegment[0]
+
+        let overlap = false
+        for (let i = 0; i < size; i++) {
+            // sts[i].tf = (type && (i === this.pointer.current)) ? (type) : (this.sts[i].tf)
+            // if (type && this.pointer.next === i) {
+            //     sts[i].tf = type
+            //     sts[i].num = 1
+            // } else {
+            //     sts[i].tf = this.sts[i].tf
+            //     sts[i].num = this.sts[i].num
+            // }
+            sts[i].tf = this.sts[i].tf
+            sts[i].num = this.sts[i].num
+            sts[i].plus = this.sts[i].plus
+
+            if (!overlap && (this.lineSegment[i + 1] >= this.tc)) {
+                overlap = true
+                sts[i].stop = this.tc
+                sts[i].dt = this.lineSegment[i + 1] - this.tc
+                sts[i].trs = sts[i].dt !== 0
+                sts[i + 1].start = sts[i].dt
+                continue
+            }
+
+            if (overlap) {
+                sts[i].stop = this.lineSegment[i + 1] - this.tc
+                sts[i + 1].start = this.lineSegment[i + 1] - this.tc
+            } else {
+                sts[i].stop = this.lineSegment[i + 1]
+                sts[i + 1].start = this.lineSegment[i + 1]
+            }
+        }
+        sts[size].start = 0
+        return sts
     }
 
     getPk(): Pk {
@@ -69,87 +137,22 @@ export class PkFiniteStateMachine implements Pk {
         })
     }
 
-    // private makeTrs() {
-    //     produce<Pk>(draft => {
-    //         draft.sts.forEach(line => {
-    //             if (line.start !== line.stop) {
-    //                 if ((line.start < this.tc) && (line.stop > this.tc)) {
-    //                     line.trs = true
-    //                     line.dt = line.stop - this.tc
-    //                     line.stop = 0
-    //                 } else {
-    //                     if (line.start >= this.tc) line.start -= this.tc
-    //                     if (line.stop >= this.tc) line.stop -= this.tc
-    //                 }
-    //             }
-    //         })
-    //     })
-    //
-    // }
-
-    makeTrs() {
-        this.sts.forEach(l => console.log(l.start, l.stop, l.trs, l.dt))
-        this.sts.forEach((line, index) => {
-            if (line.start !== line.stop) {
-                if ((line.start < this.tc) && (line.stop > this.tc)) {
-                    line.trs = true
-                    line.dt = line.stop - this.tc
-                    line.stop = 0
-                } else {
-                    line.stop += line.dt
-                    line.trs = false
-                    line.dt = 0
-
-                    if (line.start >= this.tc) line.start -= this.tc
-                    if (line.stop > this.tc) {
-                        line.stop -= this.tc
-                    }
-                    if (line.start > line.stop) {
-                        line.trs = true
-                        line.dt = line.stop
-                        line.stop = this.tc
-                    }
-
-                    if (this.sts[index - 1]?.trs) line.start = this.sts[index - 1].dt
-
-                    if ((line.stop - line.start + line.dt) < minPhaseDuration) {
-                        line.stop = line.start + minPhaseDuration
-                        if (line.stop >= this.tc) {
-                            line.trs = true
-                            line.dt = line.stop - this.tc
-                            line.stop = 0
-                        }
-                    }
-                }
-            }
-        })
-        this.sts.forEach(l => console.log(l.start, l.stop, l.trs, l.dt))
-    }
-
     changeDesc(desc: string): Pk {
         return {...this.getPk(), desc}
     }
 
     changeTc(newTc: number): Pk {
         return produce(this, draft => {
-            if (draft.tpu === 0) {
-                if (newTc < 3) {
-                    draft.tc = newTc
-                } else {
-                    const diff = newTc - draft.tc
-                    draft.tc = newTc
+            if (newTc < 3) {
 
-                    const linesCount = draft.getLinesCount()
+            } else {
+                const diff = newTc - draft.tc
+                draft.tc = newTc
 
-                    draft.sts[draft.pointer.current].stop += diff
-                    draft.pointer.increment()
-
-                    for (let i = draft.pointer.current; i < linesCount-1; i++) {
-                        draft.sts[i].start += diff
-                        draft.sts[i].stop += diff
-                    }
-                    draft.makeTrs()
+                for (let i = draft.pointer.next; i < draft.lineSegment.length; i++) {
+                    draft.lineSegment[i] += diff
                 }
+                draft.sts = draft.convertLineToSts(draft.getLinesCount())
             }
         }).getPk()
     }
@@ -168,29 +171,11 @@ export class PkFiniteStateMachine implements Pk {
 
     changeShift(newShift: number): Pk {
         return produce(this, draft => {
-            if (draft.tpu === 0) {
-                if (newShift >= draft.tc) newShift = draft.tc - 1
-                const shiftDiff = newShift - draft.shift
-                draft.shift = newShift
-                draft.sts.forEach((line, index) => {
-                    if (line.start !== line.stop) {
-                        line.start += shiftDiff
-                        line.stop += shiftDiff + (line.trs ? line.dt : 0)
-
-                        if (line.start < 0) line.start += draft.tc
-                        while (line.stop <= 0) line.stop += draft.tc
-                        // while (line.stop <= 0) {
-                        //     console.log(line.stop, index)
-                        //     line.stop += draft.tc
-                        //     console.log(line.stop, index)
-                        // }
-                    }
-                })
-                // this.sts = draft.sts
-                draft.makeTrs()
-                // draft.pointer.setCurrent(0)
-                // draft.changeDuration(0)
-            }
+            if (newShift >= draft.tc) newShift = draft.tc - 1
+            const shiftDiff = newShift - draft.shift
+            draft.shift = newShift
+            draft.lineSegment = draft.lineSegment.map(dot => dot + shiftDiff)
+            draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
 
@@ -205,73 +190,81 @@ export class PkFiniteStateMachine implements Pk {
     insertLine(type: number): Pk {
         return produce(this, draft => {
             if (draft.pointer.current === 11) return draft
-            draft.sts[draft.pointer.current].stop -= minPhaseDuration
+
+            if ((draft.shift !== 0) && (draft.pointer.current === draft.getLinesCount() - 1)) {
+                if (draft.sts[draft.pointer.current].trs) {
+                    draft.lineSegment.splice(draft.pointer.next, 0,
+                        draft.sts[draft.pointer.current].stop + draft.sts[draft.pointer.current].dt - minPhaseDuration
+                    )
+                } else {
+                    draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop + draft.tc - minPhaseDuration)
+                }
+            } else {
+                draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - minPhaseDuration)
+            }
             draft.sts.splice(draft.pointer.next, 0, {
-                line: 0,
-                num: 1,
-                plus: false,
-                start: draft.sts[draft.pointer.current].stop,
-                stop: draft.sts[draft.pointer.current].stop + minPhaseDuration,
-                tf: 0,
-                trs: false,
-                dt: 0
-            })
+                    line: 0,
+                    num: 1,
+                    plus: false,
+                    start: 0,
+                    stop: 0,
+                    tf: type,
+                    trs: false,
+                    dt: 0
+                }
+            )
             draft.sts.pop()
-            draft.fillLines()
-
-            draft.pointer.increment()
-            // draft.changeType(type)
-            // return this.changeDuration(minPhaseDuration)
-
-            // draft.makeTrs()
+            draft.sts = draft.convertLineToSts(draft.getLinesCount() + 1, type)
         }).getPk()
     }
 
     deleteLine(): Pk {
         return produce(this, draft => {
             if (draft.pointer.current === 0) return draft
-            const deletedLine = draft.sts.splice(draft.pointer.current, 1)[0]
+            draft.sts.splice(draft.pointer.current, 1)
             draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
-            draft.fillLines()
-            draft.pointer = new Pointer(draft.pointer.previous, draft.getLinesCount())
-            if (draft.pointer.previous === 0) {
-                draft.sts[draft.pointer.current].stop = deletedLine.stop
-            } else {
-                draft.sts[draft.pointer.previous].start = deletedLine.start
-            }
-            draft.makeTrs()
+            draft.lineSegment.splice(draft.pointer.current, 1)
+            draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
 
-    changeStart(start: number): Pk {
-        if (this.pointer.current === 0) {
-            return this.changeShift(start)
-        } else {
-            this._sts[this.pointer.current].start = start
-            this._sts[this.pointer.previous].stop = start
-        }
-        return this.getPk()
+    changeStart(newStart: number): Pk {
+        return produce<PkFiniteStateMachine>(this, draft => {
+            if (draft.pointer.current === 0) {
+                const shiftDiff = draft.shift - newStart
+                draft.shift = newStart
+                draft.lineSegment = draft.lineSegment.map(dot => dot - shiftDiff)
+            } else {
+                const diff = newStart - draft.sts[draft.pointer.current].start
+                draft.lineSegment[draft.pointer.current] += diff
+            }
+            draft.sts = draft.convertLineToSts(draft.getLinesCount())
+        }).getPk()
     }
 
     changeType(type: number): Pk {
-        this.sts[this.pointer.current].tf = type
-        if (this.sts[this.pointer.current].num === 0) this.sts[this.pointer.current].num = 1
-        switch (type) {
-            case 1:
-            case 8:
-                this.sts[this.pointer.current].num = 0
-                break
-            case 2:
-            case 3:
-                // твп 1, твп2
-                break
-            case 4:
-                // твп 1,2
-                break
-            default:
-                break
-        }
-        return this.getPk()
+        return produce<PkFiniteStateMachine>(this, draft => {
+            draft.sts[draft.pointer.current].tf = type
+        }).getPk()
+
+        // this.sts[this.pointer.current].tf = type
+        // if (this.sts[this.pointer.current].num === 0) this.sts[this.pointer.current].num = 1
+        // switch (type) {
+        //     case 1:
+        //     case 8:
+        //         this.sts[this.pointer.current].num = 0
+        //         break
+        //     case 2:
+        //     case 3:
+        //         // твп 1, твп2
+        //         break
+        //     case 4:
+        //         // твп 1,2
+        //         break
+        //     default:
+        //         break
+        // }
+        // return this.getPk()
     }
 
     changePhaseNum(num: number): Pk {
@@ -281,19 +274,12 @@ export class PkFiniteStateMachine implements Pk {
 
     changeDuration(diff: number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
-            const linesCount = draft.getLinesCount()
-            draft.pointer = new Pointer(draft.pointer.current, linesCount)
-
-            if (draft.pointer.next === 0) {
-                draft.sts[draft.pointer.current].start -= diff
-                // if (draft.sts[draft.pointer.current].start < 0) draft.sts[draft.pointer.current].start = 0
-                draft.sts[draft.pointer.previous].stop -= diff
+            if (draft.pointer.next === (draft.lineSegment.length - 1)) {
+                draft.lineSegment[draft.pointer.current] -= diff
             } else {
-                draft.sts[draft.pointer.current].stop += diff
-                draft.sts[draft.pointer.next].start += diff
-                if (draft.sts[draft.pointer.next].start < 0) draft.sts[draft.pointer.next].start = draft.sts[draft.pointer.current].stop
+                draft.lineSegment[draft.pointer.next] += diff
             }
-            draft.makeTrs()
+            draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
 

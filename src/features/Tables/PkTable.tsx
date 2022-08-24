@@ -1,7 +1,7 @@
 import React from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {Pk, St} from "../../common";
-import {Checkbox, FormControlLabel, MenuItem, Select} from "@mui/material";
+import {Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
 import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
 import {setPk} from "../crossInfoSlice";
 import {useAppDispatch} from "../../app/hooks";
@@ -24,14 +24,30 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
 
     const columns: GridColumns = [
         {field: "line", headerName: "№ перекл.", ...defaultColumnOptions,},
-        {field: "start", headerName: "Вр. вкл", ...defaultColumnOptions},
+        {
+            field: "start",
+            headerName: "Вр. вкл",
+            ...defaultColumnOptions,
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                if (props.currentPk) changePk(props.pkFSM.changeStart(Number(params.props.value)))
+                // changeSkLine(Number(params.id), {...props.currentSk.lines[Number(params.id)], npk: Number(params.props.value)})
+                return {...params.props};
+            },
+        },
         {
             field: "tf",
             headerName: "Тип фазы",
             ...defaultColumnOptions,
             renderCell: (params) => {
-                return (<Select onChange={() => {
-                }} value={params.value}>
+                return (<Select
+                    onChange={(event: SelectChangeEvent<number>) => {
+                        if (props.currentPk) changePk(props.pkFSM.changeType(Number(event.target.value)))
+                    }}
+                    value={params.value}
+                    // onFocus={(e) => {
+                    //     props.setCurrentRow(Number(e.currentTarget.parentElement?.parentElement?.parentElement?.getAttribute("data-id")))
+                    // }}
+                >
                     <MenuItem value={0} key={0}>---</MenuItem>)
                     <MenuItem value={1} key={1}>МГР</MenuItem>)
                     <MenuItem value={2} key={2}>1 ТВП</MenuItem>)
