@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ChangeEvent} from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {Pk, St} from "../../common";
 import {Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
@@ -23,14 +23,13 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
     }
 
     const columns: GridColumns = [
-        {field: "line", headerName: "№ перекл.", ...defaultColumnOptions,},
+        {field: "line", headerName: "№ перекл.", ...defaultColumnOptions, editable: false},
         {
             field: "start",
             headerName: "Вр. вкл",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 if (props.currentPk) changePk(props.pkFSM.changeStart(Number(params.props.value)))
-                // changeSkLine(Number(params.id), {...props.currentSk.lines[Number(params.id)], npk: Number(params.props.value)})
                 return {...params.props};
             },
         },
@@ -38,15 +37,16 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             field: "tf",
             headerName: "Тип фазы",
             ...defaultColumnOptions,
+            editable: false,
             renderCell: (params) => {
                 return (<Select
                     onChange={(event: SelectChangeEvent<number>) => {
                         if (props.currentPk) changePk(props.pkFSM.changeType(Number(event.target.value)))
                     }}
                     value={params.value}
-                    // onFocus={(e) => {
-                    //     props.setCurrentRow(Number(e.currentTarget.parentElement?.parentElement?.parentElement?.getAttribute("data-id")))
-                    // }}
+                    onFocus={() => {
+                        if (props.currentRow !== Number(params.id)) props.setCurrentRow([Number(params.id)])
+                    }}
                 >
                     <MenuItem value={0} key={0}>---</MenuItem>)
                     <MenuItem value={1} key={1}>МГР</MenuItem>)
@@ -61,33 +61,57 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                 </Select>)
             }
         },
-        {field: "num", headerName: "№ фазы", ...defaultColumnOptions},
+        {
+            field: "num",
+            headerName: "№ фазы",
+            ...defaultColumnOptions,
+            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                if (props.currentPk) changePk(props.pkFSM.changePhaseNum(Number(params.props.value)))
+                return {...params.props};
+            },
+        },
         {
             field: "duration",
             headerName: "Длительность",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-                if (props.currentPk) changePk(props.pkFSM.changeDuration(calcDurationDiff(Number(params.props.value))))
-                // changeSkLine(Number(params.id), {...props.currentSk.lines[Number(params.id)], npk: Number(params.props.value)})
+                if (props.currentPk) {
+                    if (props.currentPk.tpu === 0) {
+                        changePk(props.pkFSM.changeDuration(calcDurationDiff(Number(params.props.value))))
+                    } else {
+                        changePk(props.pkFSM.changeTc(props.currentPk.tc + calcDurationDiff(Number(params.props.value))))
+                    }
+                }
                 return {...params.props};
             },
+            valueFormatter: (params) => {
+                // todo: uncomment on pk complete
+                // if ((Number(params.value) < minPhaseDuration) && (props.currentPk.sts[Number(params.id) - 1].start !== props.currentPk.sts[Number(params.id) - 1].stop)) return minPhaseDuration
+                return Number(params.value)
+            }
         },
         {
             field: "plus",
             headerName: "+пред.",
             ...defaultColumnOptions,
+            editable: false,
             renderCell: (params =>
                     <FormControlLabel
                         control={
                             <Checkbox
                                 checked={params.value}
-                                onChange={() => {
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    if (props.currentPk) changePk(props.pkFSM.changePlus(e.target.checked))
+                                }}
+                                onFocus={() => {
+                                    if (props.currentRow !== Number(params.id)) props.setCurrentRow([Number(params.id)])
                                 }}
                             />
                         }
                         label=""
                     />
-            )
+            ),
+
         },
     ]
 

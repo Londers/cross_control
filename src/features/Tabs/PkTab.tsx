@@ -39,27 +39,21 @@ function PkTab(props: { pk: number, setPk: Function }) {
 
     const handlePkDescChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (currentPk) changePk(pkFSM.changeDesc(event.currentTarget.value))
-        // if (currentPk) changePk({...currentPk, desc: event.currentTarget.value})
     }
     const handlePkTcChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (currentPk) changePk(pkFSM.changeTc(Number(event.currentTarget.value)))
-        // if (currentPk) changePk({...currentPk, tc: Number(event.currentTarget.value)})
     }
     const handlePkTwotChange = () => {
         if (currentPk) changePk(pkFSM.changeTwot(!currentPk.twot))
-        // if (currentPk) changePk({...currentPk, twot: !currentPk.twot})
     }
     const handlePkShiftChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (currentPk) changePk(pkFSM.changeShift(Number(event.currentTarget.value)))
-        // if (currentPk) changePk({...currentPk, shift: Number(event.currentTarget.value)})
     }
     const handlePkTypePuChange = (event: SelectChangeEvent<number>) => {
         if (currentPk) changePk(pkFSM.changeTpu(Number(event.target.value)))
-        // if (currentPk) changePk({...currentPk, tpu: Number(event.target.value)})
     }
     const handlePkRazlenChange = () => {
         if (currentPk) changePk(pkFSM.changeRazlen(!currentPk.razlen))
-        // if (currentPk) changePk({...currentPk, razlen: !currentPk.razlen})
     }
 
     const handlePkTransferChange = () => {
@@ -136,6 +130,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     type="text"
                     style={{width: "150px"}}
                     value={currentPk?.tc ?? ""}
+                    disabled={currentPk?.tpu === 1}
                     onChange={handlePkTcChange}
                 />
                 <FormControlLabel
@@ -150,6 +145,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     type="text"
                     style={{width: "150px"}}
                     value={currentPk?.shift ?? ""}
+                    disabled={currentPk?.tpu === 1}
                     onChange={handlePkShiftChange}
                 />
                 <FormControl sx={{width: "fit-content", minWidth: "90px"}}>

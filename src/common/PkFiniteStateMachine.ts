@@ -1,7 +1,7 @@
 import {Pk, St} from "./index";
 import produce, {immerable} from "immer"
 
-const minPhaseDuration = 4
+export const minPhaseDuration = 4
 
 export class PkFiniteStateMachine implements Pk {
     private _pointer!: Pointer
@@ -63,27 +63,22 @@ export class PkFiniteStateMachine implements Pk {
             }
         })
         this.lineSegment = line
-        console.log(this.sts)
+        // console.log(this.sts)
         console.log(this.lineSegment)
     }
 
     convertLineToSts(size: number, type?: number): St[] {
         // const size = this.getLinesCount()
+
         const sts = Array.from({length: 12}, (v, i) => {
             return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
         })
         sts[0].start = this.lineSegment[0]
+        sts[0].tf = 0
+        sts[0].num = 1
 
         let overlap = false
         for (let i = 0; i < size; i++) {
-            // sts[i].tf = (type && (i === this.pointer.current)) ? (type) : (this.sts[i].tf)
-            // if (type && this.pointer.next === i) {
-            //     sts[i].tf = type
-            //     sts[i].num = 1
-            // } else {
-            //     sts[i].tf = this.sts[i].tf
-            //     sts[i].num = this.sts[i].num
-            // }
             sts[i].tf = this.sts[i].tf
             sts[i].num = this.sts[i].num
             sts[i].plus = this.sts[i].plus
@@ -131,11 +126,11 @@ export class PkFiniteStateMachine implements Pk {
         return count
     }
 
-    fillLines() {
-        this.sts = this.sts.map((line, index) => {
-            return {...line, line: index + 1}
-        })
-    }
+    // fillLines() {
+    //     this.sts = this.sts.map((line, index) => {
+    //         return {...line, line: index + 1}
+    //     })
+    // }
 
     changeDesc(desc: string): Pk {
         return {...this.getPk(), desc}
@@ -146,9 +141,30 @@ export class PkFiniteStateMachine implements Pk {
             if (newTc < 3) {
 
             } else {
-                const diff = newTc - draft.tc
+                draft.pointer = new Pointer(draft.pointer.current, draft.lineSegment.length)
+                if (newTc > 255) newTc = 255
+                if (newTc < minPhaseDuration * draft.getLinesCount()) newTc = minPhaseDuration * draft.getLinesCount()
+
+                if (newTc <= draft.shift) {
+                    const shiftDiff = newTc - (draft.shift + 1)
+                    draft.shift += shiftDiff
+                    draft.lineSegment = draft.lineSegment.map(dot => dot + shiftDiff)
+                }
+
+                let diff = newTc - draft.tc
                 draft.tc = newTc
 
+                if ((minPhaseDuration + draft.lineSegment[draft.pointer.current]) - draft.lineSegment[draft.pointer.next] > diff) {
+                    while ((draft.lineSegment[draft.pointer.next] + diff) < (draft.lineSegment[draft.pointer.current] + minPhaseDuration)) {
+                        const partialReduction = minPhaseDuration + draft.lineSegment[draft.pointer.current] - draft.lineSegment[draft.pointer.next]
+                        diff -= partialReduction
+                        for (let i = draft.pointer.next; i < draft.lineSegment.length; i++) {
+                            draft.lineSegment[i] += partialReduction
+                        }
+                        draft.pointer.increment()
+                        if (draft.pointer.next === 0) draft.pointer.increment()
+                    }
+                }
                 for (let i = draft.pointer.next; i < draft.lineSegment.length; i++) {
                     draft.lineSegment[i] += diff
                 }
@@ -180,7 +196,14 @@ export class PkFiniteStateMachine implements Pk {
     }
 
     changeTpu(tpu: number): Pk {
-        return {...this.getPk(), tpu}
+        return produce(this, draft => {
+            if (tpu === 1) { // ЛПУ
+                draft.lineSegment = draft.lineSegment.map(dot => dot - draft.shift)
+                draft.shift = 0
+                draft.sts = draft.convertLineToSts(draft.getLinesCount())
+            }
+            draft.tpu = tpu
+        }).getPk()
     }
 
     changeRazlen(razlen: boolean): Pk {
@@ -268,24 +291,101 @@ export class PkFiniteStateMachine implements Pk {
     }
 
     changePhaseNum(num: number): Pk {
-        this._sts[this.pointer.current].num = num
-        return this.getPk()
+        return produce<PkFiniteStateMachine>(this, draft => {
+            draft.sts[draft.pointer.current].num = num
+        }).getPk()
+    }
+
+    doMagic(diff: number): number[] {
+
+        if (diff > (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next])) {
+            diff = (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next]) + this.lineSegment[this.pointer.current]
+        }
+
+
+        let overlap = (this.lineSegment.length - 1) === this.pointer.next
+
+        let preOverlapIndexes = []
+
+        let newLine = [...this.lineSegment]
+        let tempPointer = new Pointer(this.pointer.next, newLine.length)
+
+        // let j = 1
+
+        while (diff !== 0) {
+
+
+            let prev = newLine[tempPointer.previous]
+            let curr = newLine[tempPointer.current]
+            let next = newLine[tempPointer.next]
+
+            if (overlap) {
+                diff -= (curr - prev - minPhaseDuration)
+
+                if (tempPointer.next <= 1)  newLine[1] -= (curr - prev - minPhaseDuration)
+                for (let i = 1; i < tempPointer.next; i++) {
+                    newLine[i] -= (curr - prev - minPhaseDuration)
+                }
+            } else {
+                // if (tempPointer.current === newLine.length - 1) {
+                //     diff -= (curr - prev - minPhaseDuration)
+                //     newLine[tempPointer.previous] += (curr - prev - minPhaseDuration)
+                //     overlap = true
+                // } else {
+                diff -= (next - curr - minPhaseDuration)
+                preOverlapIndexes.push(tempPointer.current)
+                // }
+
+                preOverlapIndexes.forEach(i => {
+                    newLine[i] += next - curr - minPhaseDuration
+                })
+            }
+
+            tempPointer.increment()
+            if (tempPointer.next === 0) {
+                overlap = true
+            }
+            if (tempPointer.current === 0) tempPointer.increment()
+
+            console.log(newLine)
+            // if (tempPointer.next === this.shift) tempPointer.increment()
+        }
+
+        return newLine
     }
 
     changeDuration(diff: number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
-            if (draft.pointer.next === (draft.lineSegment.length - 1)) {
-                draft.lineSegment[draft.pointer.current] -= diff
+            // draft.pointer.increment()
+            // if ((diff + draft.lineSegment[draft.pointer.current]) > (draft.lineSegment[draft.pointer.next] - minPhaseDuration)) {
+            //     diff = draft.lineSegment[draft.pointer.next] - draft.lineSegment[draft.pointer.current] - minPhaseDuration
+            // }
+            // draft.pointer.decrement()
+
+            if ((diff + draft.lineSegment[draft.pointer.current]) > (draft.lineSegment[draft.pointer.next] - minPhaseDuration)) {
+                draft.lineSegment = draft.doMagic(diff)
             } else {
-                draft.lineSegment[draft.pointer.next] += diff
+                if (draft.pointer.next === (draft.lineSegment.length - 1)) {
+                    draft.lineSegment[draft.pointer.current] -= diff
+                } else {
+                    draft.lineSegment[draft.pointer.next] += diff
+                }
             }
+
+            // for (let i = 0; i < draft.lineSegment.length - 1; i++) {
+            //     if ((draft.lineSegment[i + 1] - draft.lineSegment[i]) < minPhaseDuration) {
+            //         draft.lineSegment[i + 1] = draft.lineSegment[i] + minPhaseDuration
+            //     }
+            // }
+
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
 
     changePlus(plus: boolean): Pk {
-        this._sts[this.pointer.current].plus = plus
-        return this.getPk()
+        return produce<PkFiniteStateMachine>(this, draft => {
+            draft.sts[draft.pointer.current].plus = plus
+        }).getPk()
     }
 }
 
