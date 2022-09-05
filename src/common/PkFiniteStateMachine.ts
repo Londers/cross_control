@@ -297,58 +297,70 @@ export class PkFiniteStateMachine implements Pk {
     }
 
     doMagic(diff: number): number[] {
-
-        if (diff > (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next])) {
+        if (diff > (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next]) + this.lineSegment[this.pointer.current]) {
             diff = (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next]) + this.lineSegment[this.pointer.current]
         }
 
+        if (isNaN(diff)) return this.lineSegment
 
         let overlap = (this.lineSegment.length - 1) === this.pointer.next
 
         let preOverlapIndexes = []
 
         let newLine = [...this.lineSegment]
-        let tempPointer = new Pointer(this.pointer.next, newLine.length)
+        let tempPointer = new Pointer(this.pointer.next - 1, newLine.length)
 
-        // let j = 1
+        if (overlap) tempPointer.setCurrent(1)
 
         while (diff !== 0) {
-
+            if ((tempPointer.current === 0) && overlap) {
+                tempPointer.increment()
+            }
 
             let prev = newLine[tempPointer.previous]
             let curr = newLine[tempPointer.current]
             let next = newLine[tempPointer.next]
 
             if (overlap) {
-                diff -= (curr - prev - minPhaseDuration)
+                const maxI =  (this.pointer.next !== 0) ? this.pointer.next :  this.pointer.current
 
-                if (tempPointer.next <= 1)  newLine[1] -= (curr - prev - minPhaseDuration)
-                for (let i = 1; i < tempPointer.next; i++) {
-                    newLine[i] -= (curr - prev - minPhaseDuration)
+                if (curr - diff >= prev + minPhaseDuration) {
+                    for (let i = tempPointer.current; i < maxI; i++) {
+                        newLine[i] -= diff
+                    }
+                    break
+                } else if (maxI > tempPointer.current) {
+                    diff -= (curr - prev - minPhaseDuration)
+                    for (let i = tempPointer.current; i < maxI; i++) {
+                        newLine[i] -= (curr - prev - minPhaseDuration)
+                    }
                 }
             } else {
-                // if (tempPointer.current === newLine.length - 1) {
-                //     diff -= (curr - prev - minPhaseDuration)
-                //     newLine[tempPointer.previous] += (curr - prev - minPhaseDuration)
-                //     overlap = true
-                // } else {
-                diff -= (next - curr - minPhaseDuration)
-                preOverlapIndexes.push(tempPointer.current)
-                // }
+                if ((newLine.length - 1) !== tempPointer.next) {
+                    curr = next
+                    next = newLine[tempPointer.next + 1]
 
-                preOverlapIndexes.forEach(i => {
-                    newLine[i] += next - curr - minPhaseDuration
-                })
+                    if (next - diff >= curr + minPhaseDuration) {
+                        preOverlapIndexes.push(tempPointer.next)
+                        preOverlapIndexes.forEach(i => {
+                            newLine[i] += diff
+                        })
+                        break
+                    } else {
+                        diff -= (next - curr - minPhaseDuration)
+                        preOverlapIndexes.push(tempPointer.next)
+                        preOverlapIndexes.forEach(i => {
+                            newLine[i] += next - curr - minPhaseDuration
+                        })
+                    }
+                }
             }
 
             tempPointer.increment()
             if (tempPointer.next === 0) {
                 overlap = true
             }
-            if (tempPointer.current === 0) tempPointer.increment()
-
             console.log(newLine)
-            // if (tempPointer.next === this.shift) tempPointer.increment()
         }
 
         return newLine
@@ -361,23 +373,22 @@ export class PkFiniteStateMachine implements Pk {
             //     diff = draft.lineSegment[draft.pointer.next] - draft.lineSegment[draft.pointer.current] - minPhaseDuration
             // }
             // draft.pointer.decrement()
+            draft.lineSegment = draft.doMagic(diff)
 
-            if ((diff + draft.lineSegment[draft.pointer.current]) > (draft.lineSegment[draft.pointer.next] - minPhaseDuration)) {
-                draft.lineSegment = draft.doMagic(diff)
-            } else {
-                if (draft.pointer.next === (draft.lineSegment.length - 1)) {
-                    draft.lineSegment[draft.pointer.current] -= diff
-                } else {
-                    draft.lineSegment[draft.pointer.next] += diff
-                }
-            }
-
-            // for (let i = 0; i < draft.lineSegment.length - 1; i++) {
-            //     if ((draft.lineSegment[i + 1] - draft.lineSegment[i]) < minPhaseDuration) {
-            //         draft.lineSegment[i + 1] = draft.lineSegment[i] + minPhaseDuration
+            // if ((diff + draft.lineSegment[draft.pointer.current]) > (draft.lineSegment[draft.pointer.next] - minPhaseDuration)) {
+            //     draft.lineSegment = draft.doMagic(diff)
+            // } else if ((diff + draft.lineSegment[draft.pointer.current]) < (draft.lineSegment[draft.pointer.previous] + minPhaseDuration)) {
+            //     if ((draft.lineSegment.length - 1) === draft.pointer.next) {
+            //         draft.lineSegment[draft.pointer.current] = draft.lineSegment[draft.pointer.next] - minPhaseDuration
+            //     }
+            //     draft.lineSegment[draft.pointer.next] = draft.lineSegment[draft.pointer.current] + minPhaseDuration
+            // } else {
+            //     if (draft.pointer.next === (draft.lineSegment.length - 1)) {
+            //         draft.lineSegment[draft.pointer.current] -= diff
+            //     } else {
+            //         draft.lineSegment[draft.pointer.next] += diff
             //     }
             // }
-
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
