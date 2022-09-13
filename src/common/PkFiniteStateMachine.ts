@@ -2,6 +2,8 @@ import {Pk, St} from "./index";
 import produce, {immerable} from "immer"
 
 export const minPhaseDuration = 4
+const tvpNums = [2, 3, 4]
+const replaceNums = [5, 6, 7]
 
 export class PkFiniteStateMachine implements Pk {
     private _pointer!: Pointer
@@ -32,7 +34,7 @@ export class PkFiniteStateMachine implements Pk {
         this.tpu = pk?.tpu ?? 0;
         this.twot = pk?.twot ?? false;
 
-        this.pointer = new Pointer(pointer, 12)
+        this.pointer = new Pointer(pointer)
     }
 
     set pointer(value: Pointer) {
@@ -47,7 +49,14 @@ export class PkFiniteStateMachine implements Pk {
         if (this.sts.length === 0) return []
         const line: number[] = [this.sts[0].start]
         let overlap = false
-        this.sts.forEach(st => {
+
+        for (let st of this.sts) {
+            if (replaceNums.some(repl => repl === st.tf)) continue
+
+            // if (tvpNums.some(tvp => tvp === st.tf)) {
+            //
+            // }
+
             if ((st.start !== st.stop) || (st.dt !== 0)) {
                 if (st.dt !== 0) {
                     overlap = true
@@ -61,14 +70,37 @@ export class PkFiniteStateMachine implements Pk {
                     line.push(st.stop)
                 }
             }
-        })
+        }
+
+        // this.sts.forEach(st => {
+        //     if (replaceNums.some(repl => repl === st.tf)) {
+        //         continue
+        //     }
+        //
+        //     if ((st.start !== st.stop) || (st.dt !== 0)) {
+        //         if (st.dt !== 0) {
+        //             overlap = true
+        //             line.push(st.stop + st.dt)
+        //         } else if ((st.start === 0) && (this.shift !== 0)) {
+        //             overlap = true
+        //             line.push(st.stop + this.tc)
+        //         } else if (overlap) {
+        //             line.push(st.stop + this.tc)
+        //         } else {
+        //             line.push(st.stop)
+        //         }
+        //     }
+        // })
+
         this.lineSegment = line
-        // console.log(this.sts)
+        console.log(this.sts)
         console.log(this.lineSegment)
     }
 
     convertLineToSts(size: number, type?: number): St[] {
         // const size = this.getLinesCount()
+
+        const tvpIndexes = this.sts.filter(st => tvpNums.some(tvp => tvp === st.tf))
 
         const sts = Array.from({length: 12}, (v, i) => {
             return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
@@ -89,19 +121,46 @@ export class PkFiniteStateMachine implements Pk {
                 sts[i].dt = this.lineSegment[i + 1] - this.tc
                 sts[i].trs = sts[i].dt !== 0
                 sts[i + 1].start = sts[i].dt
-                continue
+            } else {
+                if (overlap) {
+                    sts[i].stop = this.lineSegment[i + 1] - this.tc
+                    sts[i + 1].start = this.lineSegment[i + 1] - this.tc
+                } else {
+                    sts[i].stop = this.lineSegment[i + 1]
+                    sts[i + 1].start = this.lineSegment[i + 1]
+                }
             }
 
-            if (overlap) {
-                sts[i].stop = this.lineSegment[i + 1] - this.tc
-                sts[i + 1].start = this.lineSegment[i + 1] - this.tc
-            } else {
-                sts[i].stop = this.lineSegment[i + 1]
-                sts[i + 1].start = this.lineSegment[i + 1]
+            if (tvpIndexes.some(tvp => tvp.tf === sts[i].tf)) {
+                const replCount = this.getReplCount(i)
+                for (let j = 1; j < replCount + 1; j++) {
+                    sts[i + j].num = this.sts[i + j].num
+                    sts[i + j].tf = this.sts[i + j].tf
+                    sts[i + j].start = sts[i].start
+                    sts[i + j].stop = sts[i].stop
+                    sts[i + j].dt = sts[i].dt
+                    sts[i + j].trs = sts[i].trs
+                    this.lineSegment.splice((i + j - 1), 0, sts[i].stop + sts[i].dt)
+                }
+                sts[i + replCount + 1].start = sts[i + replCount].stop
+                i += replCount
             }
         }
         sts[size].start = 0
+        console.log(this.lineSegment)
+        console.log(sts)
         return sts
+    }
+
+    private getReplCount(line: number): number {
+        if (line === -1) return -1
+        let count = 0
+        for (let i = line + 1; i < 12; i++) {
+            if (replaceNums.some(repl => repl === this.sts[i].tf)) {
+                count++
+            } else if (count > 0) break
+        }
+        return count
     }
 
     getPk(): Pk {
@@ -126,11 +185,13 @@ export class PkFiniteStateMachine implements Pk {
         return count
     }
 
-    // fillLines() {
-    //     this.sts = this.sts.map((line, index) => {
-    //         return {...line, line: index + 1}
-    //     })
-    // }
+    getPrevReplCount(): number {
+        let count = 0
+        for (let i = 0; i < this.pointer.current; i++) {
+            if (replaceNums.some(repl => repl === this.sts[i].tf)) count++
+        }
+        return count
+    }
 
     changeDesc(desc: string): Pk {
         return {...this.getPk(), desc}
@@ -297,22 +358,29 @@ export class PkFiniteStateMachine implements Pk {
     }
 
     doMagic(diff: number): number[] {
+        if (isNaN(diff)) return this.lineSegment
+
+        for (let i = 0; i < this.getPrevReplCount(); i++) {
+            this.pointer.decrement()
+        }
+
+        // todo: delete this variable
+        let endlessLoop = 0
+
         if (diff > (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next]) + this.lineSegment[this.pointer.current]) {
             diff = (this.tc - (this.lineSegment.length - 2) * minPhaseDuration - this.lineSegment[this.pointer.next]) + this.lineSegment[this.pointer.current]
         }
 
-        if (isNaN(diff)) return this.lineSegment
-
         let overlap = (this.lineSegment.length - 1) === this.pointer.next
 
-        let preOverlapIndexes = []
+        const preOverlapIndexes = []
 
-        let newLine = [...this.lineSegment]
-        let tempPointer = new Pointer(this.pointer.next - 1, newLine.length)
+        const newLine = [...this.lineSegment]
+        const tempPointer = new Pointer(this.pointer.current, newLine.length)
 
         if (overlap) tempPointer.setCurrent(1)
 
-        while (diff !== 0) {
+        while ((diff !== 0) && (endlessLoop++ < 500)) {
             if ((tempPointer.current === 0) && overlap) {
                 tempPointer.increment()
             }
@@ -322,7 +390,7 @@ export class PkFiniteStateMachine implements Pk {
             let next = newLine[tempPointer.next]
 
             if (overlap) {
-                const maxI =  (this.pointer.next !== 0) ? this.pointer.next :  this.pointer.current
+                const maxI = (this.pointer.next !== 0) ? this.pointer.next : this.pointer.current
 
                 if (curr - diff >= prev + minPhaseDuration) {
                     for (let i = tempPointer.current; i < maxI; i++) {
@@ -362,7 +430,10 @@ export class PkFiniteStateMachine implements Pk {
             }
             console.log(newLine)
         }
-
+        if (endlessLoop >= 500) {
+            alert("Ошибка алгоритма расчёта ПК")
+            return this.lineSegment
+        }
         return newLine
     }
 

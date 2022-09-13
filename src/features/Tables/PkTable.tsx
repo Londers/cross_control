@@ -23,10 +23,19 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
     }
 
     const columns: GridColumns = [
-        {field: "line", headerName: "№ перекл.", ...defaultColumnOptions, editable: false},
+        {
+            field: "line",
+            headerName: "№ перекл.",
+            align: "center",
+            headerAlign: "center",
+            ...defaultColumnOptions,
+            editable: false
+        },
         {
             field: "start",
             headerName: "Вр. вкл",
+            align: "center",
+            headerAlign: "center",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 if (props.currentPk) changePk(props.pkFSM.changeStart(Number(params.props.value)))
@@ -36,7 +45,12 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
         {
             field: "tf",
             headerName: "Тип фазы",
+            align: "center",
+            headerAlign: "center",
             ...defaultColumnOptions,
+            flex: 1.5,
+            // align: "center",
+            // headerAlign: "center",
             editable: false,
             renderCell: (params) => {
                 return (<Select
@@ -64,6 +78,8 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
         {
             field: "num",
             headerName: "№ фазы",
+            align: "center",
+            headerAlign: "center",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 if (props.currentPk) changePk(props.pkFSM.changePhaseNum(Number(params.props.value)))
@@ -73,6 +89,8 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
         {
             field: "duration",
             headerName: "Длительность",
+            align: "center",
+            headerAlign: "center",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 if (props.currentPk) {
@@ -93,6 +111,8 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
         {
             field: "plus",
             headerName: "+пред.",
+            align: "center",
+            headerAlign: "center",
             ...defaultColumnOptions,
             editable: false,
             renderCell: (params =>
@@ -141,6 +161,9 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                     props.setCurrentRow(newSelectionModel);
                 }}
                 selectionModel={props.currentRow}
+                onCellEditStart={(params) => {
+                    if (props.currentRow !== Number(params.id)) props.setCurrentRow([Number(params.id)])
+                }}
             />}
         </div>
     )
