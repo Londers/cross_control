@@ -2,8 +2,8 @@ import {Pk, St} from "./index";
 import produce, {immerable} from "immer"
 
 export const minPhaseDuration = 4
-const tvpNums = [2, 3, 4]
-const replaceNums = [5, 6, 7]
+export const tvpNums = [2, 3, 4]
+export const replaceNums = [5, 6, 7]
 
 export class PkFiniteStateMachine implements Pk {
     private _pointer!: Pointer
@@ -53,10 +53,6 @@ export class PkFiniteStateMachine implements Pk {
         for (let st of this.sts) {
             if (replaceNums.some(repl => repl === st.tf)) continue
 
-            // if (tvpNums.some(tvp => tvp === st.tf)) {
-            //
-            // }
-
             if ((st.start !== st.stop) || (st.dt !== 0)) {
                 if (st.dt !== 0) {
                     overlap = true
@@ -71,26 +67,6 @@ export class PkFiniteStateMachine implements Pk {
                 }
             }
         }
-
-        // this.sts.forEach(st => {
-        //     if (replaceNums.some(repl => repl === st.tf)) {
-        //         continue
-        //     }
-        //
-        //     if ((st.start !== st.stop) || (st.dt !== 0)) {
-        //         if (st.dt !== 0) {
-        //             overlap = true
-        //             line.push(st.stop + st.dt)
-        //         } else if ((st.start === 0) && (this.shift !== 0)) {
-        //             overlap = true
-        //             line.push(st.stop + this.tc)
-        //         } else if (overlap) {
-        //             line.push(st.stop + this.tc)
-        //         } else {
-        //             line.push(st.stop)
-        //         }
-        //     }
-        // })
 
         this.lineSegment = line
         console.log(this.sts)
@@ -140,10 +116,12 @@ export class PkFiniteStateMachine implements Pk {
                     sts[i + j].stop = sts[i].stop
                     sts[i + j].dt = sts[i].dt
                     sts[i + j].trs = sts[i].trs
-                    this.lineSegment.splice((i + j - 1), 0, sts[i].stop + sts[i].dt)
+                    this.lineSegment.splice((i + j), 0, sts[i].stop + sts[i].dt)
                 }
                 sts[i + replCount + 1].start = sts[i + replCount].stop
                 i += replCount
+                // } else while (replaceNums.some(repl => repl === this.sts[i].tf)) {
+                //     i++
             }
         }
         sts[size].start = 0
@@ -152,7 +130,7 @@ export class PkFiniteStateMachine implements Pk {
         return sts
     }
 
-    private getReplCount(line: number): number {
+    getReplCount(line: number): number {
         if (line === -1) return -1
         let count = 0
         for (let i = line + 1; i < 12; i++) {
@@ -271,24 +249,29 @@ export class PkFiniteStateMachine implements Pk {
         return {...this.getPk(), razlen}
     }
 
-    insertLine(type: number): Pk {
+    insertLine(type: number, customNum?: number): Pk {
         return produce(this, draft => {
-            if (draft.pointer.current === 11) return draft
+            if ((draft.pointer.current === 11) || (draft.pointer.current > draft.lineSegment.length - 2)) return draft
 
-            if ((draft.shift !== 0) && (draft.pointer.current === draft.getLinesCount() - 1)) {
-                if (draft.sts[draft.pointer.current].trs) {
-                    draft.lineSegment.splice(draft.pointer.next, 0,
-                        draft.sts[draft.pointer.current].stop + draft.sts[draft.pointer.current].dt - minPhaseDuration
-                    )
+            let linesCount = draft.getLinesCount() + 1
+
+            if (!replaceNums.some(repl => repl === type)) {
+                if ((draft.shift !== 0) && (draft.pointer.current === draft.getLinesCount() - 1)) {
+                    if (draft.sts[draft.pointer.current].trs) {
+                        draft.lineSegment.splice(draft.pointer.next, 0,
+                            draft.sts[draft.pointer.current].stop + draft.sts[draft.pointer.current].dt - minPhaseDuration
+                        )
+                    } else {
+                        draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop + draft.tc - minPhaseDuration)
+                    }
                 } else {
-                    draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop + draft.tc - minPhaseDuration)
+                    draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - minPhaseDuration)
                 }
-            } else {
-                draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - minPhaseDuration)
             }
+
             draft.sts.splice(draft.pointer.next, 0, {
                     line: 0,
-                    num: 1,
+                    num: customNum ? customNum : 1,
                     plus: false,
                     start: 0,
                     stop: 0,
@@ -298,15 +281,56 @@ export class PkFiniteStateMachine implements Pk {
                 }
             )
             draft.sts.pop()
-            draft.sts = draft.convertLineToSts(draft.getLinesCount() + 1, type)
+
+            if (tvpNums.some(tvp => tvp === type)) {
+                if (type === 4) {
+                    draft.sts.splice(draft.pointer.next + 1, 0, {tf: 5, num: 2} as St)
+                    draft.sts.splice(draft.pointer.next + 2, 0, {tf: 6, num: 3} as St)
+                    draft.sts.splice(draft.pointer.next + 3, 0, {tf: 7, num: 4} as St)
+                    draft.sts.pop()
+                    draft.sts.pop()
+                    draft.sts.pop()
+                    linesCount += 3
+                } else {
+                    draft.sts.splice(draft.pointer.next + 1, 0, {tf: 7, num: 2} as St)
+                    draft.sts.pop()
+                    linesCount++
+                }
+            }
+
+            draft.sts = draft.convertLineToSts(linesCount, type)
         }).getPk()
     }
 
     deleteLine(): Pk {
         return produce(this, draft => {
             if (draft.pointer.current === 0) return draft
-            draft.sts.splice(draft.pointer.current, 1)
-            draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+
+            if (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
+                const currentSave = draft.pointer.current
+                while (!tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) {
+                    draft.pointer.decrement()
+                    if (draft.pointer.current === currentSave) {
+                        while (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
+                            draft.sts.splice(draft.pointer.current, 1)
+                            draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+                        }
+                        draft.sts = draft.convertLineToSts(draft.getLinesCount())
+                        return
+                    }
+                }
+            }
+
+            if (tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) {
+                const replCount = draft.getReplCount(draft.pointer.current)
+                for (let i = 0; i < replCount + 1; i++) {
+                    draft.sts.splice(draft.pointer.current, 1)
+                    draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+                }
+            } else {
+                draft.sts.splice(draft.pointer.current, 1)
+                draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+            }
             draft.lineSegment.splice(draft.pointer.current, 1)
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
@@ -360,7 +384,9 @@ export class PkFiniteStateMachine implements Pk {
     doMagic(diff: number): number[] {
         if (isNaN(diff)) return this.lineSegment
 
-        for (let i = 0; i < this.getPrevReplCount(); i++) {
+        const prevReplCount = this.getPrevReplCount()
+
+        for (let i = 0; i < prevReplCount; i++) {
             this.pointer.decrement()
         }
 

@@ -2,7 +2,7 @@ import React, {ChangeEvent} from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {Pk, St} from "../../common";
 import {Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
-import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
+import {PkFiniteStateMachine, replaceNums, tvpNums} from "../../common/PkFiniteStateMachine";
 import {setPk} from "../crossInfoSlice";
 import {useAppDispatch} from "../../app/hooks";
 
@@ -49,13 +49,29 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerAlign: "center",
             ...defaultColumnOptions,
             flex: 1.5,
-            // align: "center",
-            // headerAlign: "center",
             editable: false,
             renderCell: (params) => {
                 return (<Select
                     onChange={(event: SelectChangeEvent<number>) => {
-                        if (props.currentPk) changePk(props.pkFSM.changeType(Number(event.target.value)))
+                        if (props.currentPk) {
+                            const newTf = Number(event.target.value)
+                            if (tvpNums.some(tvp => tvp === newTf)) {
+                                const rowForFSM = props.currentRow === 0 ? 0 : props.currentRow - 1
+                                let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf), rowForFSM)
+                                if (newTf === 4) {
+                                    tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(7), rowForFSM)
+                                    tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(6, 3), rowForFSM)
+                                    changePk(tempFSM.insertLine(5, 2))
+                                } else {
+                                    changePk(tempFSM.insertLine(7))
+                                }
+                            } else if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow + 1]?.tf)) {
+                                let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf),  props.currentRow)
+                                changePk(tempFSM.deleteLine())
+                            } else {
+                                changePk(props.pkFSM.changeType(newTf))
+                            }
+                        }
                     }}
                     value={params.value}
                     onFocus={() => {
