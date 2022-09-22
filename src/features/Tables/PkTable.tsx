@@ -65,7 +65,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                                 } else {
                                     changePk(tempFSM.insertLine(7))
                                 }
-                            } else if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow + 1]?.tf)) {
+                            } else if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow]?.tf)) {
                                 let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf),  props.currentRow)
                                 changePk(tempFSM.deleteLine())
                             } else {

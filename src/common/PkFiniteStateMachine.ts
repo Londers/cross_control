@@ -7,6 +7,7 @@ export const replaceNums = [5, 6, 7]
 
 export class PkFiniteStateMachine implements Pk {
     private _pointer!: Pointer
+    tvpWithRepls: St[]
 
     [immerable] = true
 
@@ -34,6 +35,7 @@ export class PkFiniteStateMachine implements Pk {
         this.tpu = pk?.tpu ?? 0;
         this.twot = pk?.twot ?? false;
 
+        this.tvpWithRepls = []
         this.pointer = new Pointer(pointer)
     }
 
@@ -52,6 +54,14 @@ export class PkFiniteStateMachine implements Pk {
 
         for (let st of this.sts) {
             if (replaceNums.some(repl => repl === st.tf)) continue
+            if (this.razlen && tvpNums.some(tvp => tvp === st.tf)) {
+                this.tvpWithRepls = [st]
+                const replEnd = st.line + this.getReplCount(st.line - 1)
+                for (let i = st.line; i < replEnd; i++) {
+                    this.tvpWithRepls.push(this.sts[i])
+                    if (this.sts[i].stop > st.stop) st = this.sts[i]
+                }
+            }
 
             if ((st.start !== st.stop) || (st.dt !== 0)) {
                 if (st.dt !== 0) {
@@ -383,6 +393,21 @@ export class PkFiniteStateMachine implements Pk {
 
     doMagic(diff: number): number[] {
         if (isNaN(diff)) return this.lineSegment
+
+        if (this.razlen) {
+            let maxStop = 0
+            let maxStopId: number[] = []
+            this.tvpWithRepls.forEach(st => {
+                if (st.stop >= maxStop) {
+                    maxStop = st.stop
+                    maxStopId.push(st.line - 1)
+                }
+            })
+            if (!maxStopId.some(id => id === this.pointer.current)) {
+
+                return this.lineSegment
+            }
+        }
 
         const prevReplCount = this.getPrevReplCount()
 
