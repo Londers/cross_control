@@ -58,6 +58,14 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                             if (tvpNums.some(tvp => tvp === newTf)) {
                                 const rowForFSM = props.currentRow === 0 ? 0 : props.currentRow - 1
                                 let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf), rowForFSM)
+
+                                if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow]?.tf)) {
+                                    const duration = props.currentPk.sts[rowForFSM].stop - props.currentPk.sts[rowForFSM].start + props.currentPk.sts[rowForFSM].dt
+                                    tempFSM = new PkFiniteStateMachine(tempFSM.deleteLine(false), rowForFSM - 1)
+                                    changePk(tempFSM.insertLine(newTf, undefined, duration))
+                                    return
+                                }
+
                                 if (newTf === 4) {
                                     tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(7), rowForFSM)
                                     tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(6, 3), rowForFSM)
@@ -66,8 +74,8 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                                     changePk(tempFSM.insertLine(7))
                                 }
                             } else if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow]?.tf)) {
-                                let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf),  props.currentRow)
-                                changePk(tempFSM.deleteLine())
+                                let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf), props.currentRow)
+                                changePk(tempFSM.deleteLine(true))
                             } else {
                                 changePk(props.pkFSM.changeType(newTf))
                             }

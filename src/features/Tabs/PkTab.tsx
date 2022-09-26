@@ -68,7 +68,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const handlePkSwitchDelete = () => {
         if (currentPk) {
             if (selectedRow[0] !== 1) setSelectedRow([selectedRow[0] - 1])
-            changePk(pkFSM.deleteLine())
+            changePk(pkFSM.deleteLine(true))
         }
     }
 

@@ -118,20 +118,42 @@ export class PkFiniteStateMachine implements Pk {
             }
 
             if (tvpIndexes.some(tvp => tvp.tf === sts[i].tf)) {
-                const replCount = this.getReplCount(i)
-                for (let j = 1; j < replCount + 1; j++) {
-                    sts[i + j].num = this.sts[i + j].num
-                    sts[i + j].tf = this.sts[i + j].tf
-                    sts[i + j].start = sts[i].start
-                    sts[i + j].stop = sts[i].stop
-                    sts[i + j].dt = sts[i].dt
-                    sts[i + j].trs = sts[i].trs
-                    this.lineSegment.splice((i + j), 0, sts[i].stop + sts[i].dt)
+                if (this.razlen) {
+                    let maxStop = 0
+                    const tvpWithRepls: St[] = [this.sts[i]]
+                    for (let j = 0; j < this.getReplCount(i); j++) {
+                        tvpWithRepls.push(this.sts[i + j + 1])
+                    }
+                    for (let j = 0; j < tvpWithRepls.length; j++) {
+                        if (maxStop < tvpWithRepls[j].stop) {
+                            maxStop = tvpWithRepls[j].stop
+                        }
+
+                        sts[i + j].num = tvpWithRepls[j].num
+                        sts[i + j].tf = tvpWithRepls[j].tf
+                        sts[i + j].start = tvpWithRepls[j].start
+                        sts[i + j].stop = tvpWithRepls[j].stop
+                        sts[i + j].dt = tvpWithRepls[j].dt
+                        sts[i + j].trs = tvpWithRepls[j].trs
+                        // this.lineSegment.splice((i + j), 0, sts[i + j].stop + sts[i + j].dt)
+                    }
+                    // sts[i + tvpWithRepls.length].start = maxStop
+                    // i += tvpWithRepls.length - 1
+                    this.lineSegment.splice((i + 1), 0, maxStop)
+                } else {
+                    const replCount = this.getReplCount(i)
+                    for (let j = 1; j < replCount + 1; j++) {
+                        sts[i + j].num = this.sts[i + j].num
+                        sts[i + j].tf = this.sts[i + j].tf
+                        sts[i + j].start = sts[i].start
+                        sts[i + j].stop = sts[i].stop
+                        sts[i + j].dt = sts[i].dt
+                        sts[i + j].trs = sts[i].trs
+                        this.lineSegment.splice((i + j), 0, sts[i].stop + sts[i].dt)
+                    }
+                    sts[i + replCount + 1].start = sts[i + replCount].stop
+                    i += replCount
                 }
-                sts[i + replCount + 1].start = sts[i + replCount].stop
-                i += replCount
-                // } else while (replaceNums.some(repl => repl === this.sts[i].tf)) {
-                //     i++
             }
         }
         sts[size].start = 0
@@ -259,29 +281,30 @@ export class PkFiniteStateMachine implements Pk {
         return {...this.getPk(), razlen}
     }
 
-    insertLine(type: number, customNum?: number): Pk {
+    insertLine(type: number, customNum?: number, customDur?: number): Pk {
         return produce(this, draft => {
             if ((draft.pointer.current === 11) || (draft.pointer.current > draft.lineSegment.length - 2)) return draft
 
             let linesCount = draft.getLinesCount() + 1
+            const currMinDur = customDur ?? minPhaseDuration
 
             if (!replaceNums.some(repl => repl === type)) {
                 if ((draft.shift !== 0) && (draft.pointer.current === draft.getLinesCount() - 1)) {
                     if (draft.sts[draft.pointer.current].trs) {
                         draft.lineSegment.splice(draft.pointer.next, 0,
-                            draft.sts[draft.pointer.current].stop + draft.sts[draft.pointer.current].dt - minPhaseDuration
+                            draft.sts[draft.pointer.current].stop + draft.sts[draft.pointer.current].dt - currMinDur
                         )
                     } else {
-                        draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop + draft.tc - minPhaseDuration)
+                        draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop + draft.tc - currMinDur)
                     }
                 } else {
-                    draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - minPhaseDuration)
+                    draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - currMinDur)
                 }
             }
 
             draft.sts.splice(draft.pointer.next, 0, {
                     line: 0,
-                    num: customNum ? customNum : 1,
+                    num: customNum ?? 1,
                     plus: false,
                     start: 0,
                     stop: 0,
@@ -312,7 +335,7 @@ export class PkFiniteStateMachine implements Pk {
         }).getPk()
     }
 
-    deleteLine(): Pk {
+    deleteLine(deleteTvp: boolean): Pk {
         return produce(this, draft => {
             if (draft.pointer.current === 0) return draft
 
@@ -330,6 +353,11 @@ export class PkFiniteStateMachine implements Pk {
                     }
                 }
             }
+
+            // if (!deleteTvp) {
+            //     draft.sts = draft.convertLineToSts(draft.getLinesCount())
+            //     return
+            // }
 
             if (tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) {
                 const replCount = draft.getReplCount(draft.pointer.current)
@@ -404,7 +432,7 @@ export class PkFiniteStateMachine implements Pk {
                 }
             })
             if (!maxStopId.some(id => id === this.pointer.current)) {
-
+                this.sts[this.pointer.current].stop += diff
                 return this.lineSegment
             }
         }
