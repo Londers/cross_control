@@ -23,6 +23,7 @@ export class PkFiniteStateMachine implements Pk {
     twot: boolean;
 
     constructor(pk: Pk | undefined, pointer: number) {
+        this.tvpWithRepls = []
         console.log("create FSM", pointer)
         this.desc = pk?.desc ?? "";
         this.dk = pk?.dk ?? 0;
@@ -35,7 +36,6 @@ export class PkFiniteStateMachine implements Pk {
         this.tpu = pk?.tpu ?? 0;
         this.twot = pk?.twot ?? false;
 
-        this.tvpWithRepls = []
         this.pointer = new Pointer(pointer)
     }
 
@@ -97,6 +97,24 @@ export class PkFiniteStateMachine implements Pk {
 
         let overlap = false
         for (let i = 0; i < size; i++) {
+            if (replaceNums.some(repl => repl === sts[i].tf) && this.razlen) {
+                let maxStop = 0
+                let maxId = []
+                for (let j = 0; j < this.tvpWithRepls.length; j++) {
+                    if (maxStop < this.tvpWithRepls[j].stop) {
+                        maxStop = this.tvpWithRepls[j].stop
+                    }
+                }
+                for (let j = 0; j < this.tvpWithRepls.length; j++) {
+                    if (maxStop === this.tvpWithRepls[j].stop) {
+                        maxId.push(this.tvpWithRepls[j].line - 1)
+                    }
+                }
+                if (!maxId.some(id => id === i)) {
+                    continue
+                }
+            }
+
             sts[i].tf = this.sts[i].tf
             sts[i].num = this.sts[i].num
             sts[i].plus = this.sts[i].plus
@@ -120,25 +138,25 @@ export class PkFiniteStateMachine implements Pk {
             if (tvpIndexes.some(tvp => tvp.tf === sts[i].tf)) {
                 if (this.razlen) {
                     let maxStop = 0
-                    const tvpWithRepls: St[] = [this.sts[i]]
-                    for (let j = 0; j < this.getReplCount(i); j++) {
-                        tvpWithRepls.push(this.sts[i + j + 1])
-                    }
-                    for (let j = 0; j < tvpWithRepls.length; j++) {
-                        if (maxStop < tvpWithRepls[j].stop) {
-                            maxStop = tvpWithRepls[j].stop
+                    // const tvpWithRepls: St[] = [this.sts[i]]
+                    // for (let j = 0; j < this.getReplCount(i); j++) {
+                    //     tvpWithRepls.push(this.sts[i + j + 1])
+                    // }
+                    for (let j = 0; j < this.tvpWithRepls.length; j++) {
+                        if (maxStop < this.tvpWithRepls[j].stop) {
+                            maxStop = this.tvpWithRepls[j].stop
                         }
 
-                        sts[i + j].num = tvpWithRepls[j].num
-                        sts[i + j].tf = tvpWithRepls[j].tf
-                        sts[i + j].start = tvpWithRepls[j].start
-                        sts[i + j].stop = tvpWithRepls[j].stop
-                        sts[i + j].dt = tvpWithRepls[j].dt
-                        sts[i + j].trs = tvpWithRepls[j].trs
+                        sts[i + j].num = this.tvpWithRepls[j].num
+                        sts[i + j].tf = this.tvpWithRepls[j].tf
+                        sts[i + j].start = this.tvpWithRepls[j].start
+                        sts[i + j].stop = this.tvpWithRepls[j].stop
+                        sts[i + j].dt = this.tvpWithRepls[j].dt
+                        sts[i + j].trs = this.tvpWithRepls[j].trs
                         // this.lineSegment.splice((i + j), 0, sts[i + j].stop + sts[i + j].dt)
                     }
-                    // sts[i + tvpWithRepls.length].start = maxStop
-                    // i += tvpWithRepls.length - 1
+                    sts[i + this.tvpWithRepls.length].start = maxStop
+                    // i += this.tvpWithRepls.length - 1
                     this.lineSegment.splice((i + 1), 0, maxStop)
                 } else {
                     const replCount = this.getReplCount(i)
@@ -426,14 +444,24 @@ export class PkFiniteStateMachine implements Pk {
             let maxStop = 0
             let maxStopId: number[] = []
             this.tvpWithRepls.forEach(st => {
-                if (st.stop >= maxStop) {
+                if (st.stop + (st.line === (this.pointer.current + 1) ? diff : 0) >= maxStop) {
                     maxStop = st.stop
+                    //+ (st.line === (this.pointer.current + 1) ? diff : 0)
+                }
+            })
+            this.tvpWithRepls.forEach(st => {
+                if (st.stop + (st.line === (this.pointer.current + 1) ? diff : 0) === maxStop) {
                     maxStopId.push(st.line - 1)
                 }
             })
+            this.lineSegment.splice(this.pointer.current, 1, maxStop + diff)
             if (!maxStopId.some(id => id === this.pointer.current)) {
-                this.sts[this.pointer.current].stop += diff
+                // this.sts[this.pointer.current].stop += diff
+                this.tvpWithRepls[this.tvpWithRepls.findIndex(v => v.line === (this.pointer.current + 1))].stop += diff
                 return this.lineSegment
+            } else {
+                // this.tvpWithRepls[this.tvpWithRepls.findIndex(v => v.line === (this.pointer.current + 1))].stop += diff
+                this.pointer.decrement()
             }
         }
 
@@ -518,27 +546,7 @@ export class PkFiniteStateMachine implements Pk {
 
     changeDuration(diff: number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
-            // draft.pointer.increment()
-            // if ((diff + draft.lineSegment[draft.pointer.current]) > (draft.lineSegment[draft.pointer.next] - minPhaseDuration)) {
-            //     diff = draft.lineSegment[draft.pointer.next] - draft.lineSegment[draft.pointer.current] - minPhaseDuration
-            // }
-            // draft.pointer.decrement()
             draft.lineSegment = draft.doMagic(diff)
-
-            // if ((diff + draft.lineSegment[draft.pointer.current]) > (draft.lineSegment[draft.pointer.next] - minPhaseDuration)) {
-            //     draft.lineSegment = draft.doMagic(diff)
-            // } else if ((diff + draft.lineSegment[draft.pointer.current]) < (draft.lineSegment[draft.pointer.previous] + minPhaseDuration)) {
-            //     if ((draft.lineSegment.length - 1) === draft.pointer.next) {
-            //         draft.lineSegment[draft.pointer.current] = draft.lineSegment[draft.pointer.next] - minPhaseDuration
-            //     }
-            //     draft.lineSegment[draft.pointer.next] = draft.lineSegment[draft.pointer.current] + minPhaseDuration
-            // } else {
-            //     if (draft.pointer.next === (draft.lineSegment.length - 1)) {
-            //         draft.lineSegment[draft.pointer.current] -= diff
-            //     } else {
-            //         draft.lineSegment[draft.pointer.next] += diff
-            //     }
-            // }
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
