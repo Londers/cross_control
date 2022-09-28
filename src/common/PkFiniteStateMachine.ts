@@ -138,6 +138,7 @@ export class PkFiniteStateMachine implements Pk {
             if (tvpIndexes.some(tvp => tvp.tf === sts[i].tf)) {
                 if (this.razlen) {
                     let maxStop = 0
+                    this.tvpWithRepls.forEach(v => v.start = this.lineSegment[sts[i].line - 1])
                     // const tvpWithRepls: St[] = [this.sts[i]]
                     // for (let j = 0; j < this.getReplCount(i); j++) {
                     //     tvpWithRepls.push(this.sts[i + j + 1])
@@ -296,7 +297,10 @@ export class PkFiniteStateMachine implements Pk {
     }
 
     changeRazlen(razlen: boolean): Pk {
-        return {...this.getPk(), razlen}
+        return produce(this, draft => {
+            draft.razlen = razlen
+            if (!razlen) draft.sts = draft.convertLineToSts(draft.getLinesCount())
+        }).getPk()
     }
 
     insertLine(type: number, customNum?: number, customDur?: number): Pk {
@@ -440,13 +444,14 @@ export class PkFiniteStateMachine implements Pk {
     doMagic(diff: number): number[] {
         if (isNaN(diff)) return this.lineSegment
 
-        if (this.razlen) {
+
+        // ТВП с разной длительностью
+        if (this.razlen && this.tvpWithRepls.some(v => v.line === this.pointer.current + 1)) {
             let maxStop = 0
             let maxStopId: number[] = []
             this.tvpWithRepls.forEach(st => {
                 if (st.stop + (st.line === (this.pointer.current + 1) ? diff : 0) >= maxStop) {
-                    maxStop = st.stop
-                    //+ (st.line === (this.pointer.current + 1) ? diff : 0)
+                    maxStop = st.stop + (st.line === (this.pointer.current + 1) ? diff : 0)
                 }
             })
             this.tvpWithRepls.forEach(st => {
@@ -454,15 +459,20 @@ export class PkFiniteStateMachine implements Pk {
                     maxStopId.push(st.line - 1)
                 }
             })
-            this.lineSegment.splice(this.pointer.current, 1, maxStop + diff)
-            if (!maxStopId.some(id => id === this.pointer.current)) {
-                // this.sts[this.pointer.current].stop += diff
-                this.tvpWithRepls[this.tvpWithRepls.findIndex(v => v.line === (this.pointer.current + 1))].stop += diff
-                return this.lineSegment
-            } else {
-                // this.tvpWithRepls[this.tvpWithRepls.findIndex(v => v.line === (this.pointer.current + 1))].stop += diff
-                this.pointer.decrement()
+
+            const currentTvpSt = this.tvpWithRepls[this.tvpWithRepls.findIndex(v => v.line === (this.pointer.current + 1))]
+            if (maxStop > this.lineSegment[this.tvpWithRepls[0].line + 1] - minPhaseDuration) maxStop = this.lineSegment[this.tvpWithRepls[0].line + 1] - minPhaseDuration
+            if (currentTvpSt.stop + diff < currentTvpSt.start + minPhaseDuration) {
+                diff = currentTvpSt.start - currentTvpSt.stop + minPhaseDuration
             }
+
+            this.lineSegment.splice(this.tvpWithRepls[0].line, 1, maxStop)
+            if (maxStopId.some(id => id === this.pointer.current)) {
+                currentTvpSt.stop = maxStop
+            } else {
+                currentTvpSt.stop += diff
+            }
+            return this.lineSegment
         }
 
         const prevReplCount = this.getPrevReplCount()
