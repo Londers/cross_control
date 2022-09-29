@@ -85,6 +85,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const handlePkInsert = () => {
 
     }
+
     const handlePkReload = () => {
         dispatch(reloadPk(props.pk - 1))
     }

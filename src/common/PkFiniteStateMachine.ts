@@ -53,13 +53,16 @@ export class PkFiniteStateMachine implements Pk {
         let overlap = false
 
         for (let st of this.sts) {
-            if (replaceNums.some(repl => repl === st.tf)) continue
+            if (replaceNums.some(repl => repl === st.tf)) {
+                if (st.trs) overlap = true
+                continue
+            }
             if (this.razlen && tvpNums.some(tvp => tvp === st.tf)) {
                 this.tvpWithRepls = [st]
                 const replEnd = st.line + this.getReplCount(st.line - 1)
                 for (let i = st.line; i < replEnd; i++) {
                     this.tvpWithRepls.push(this.sts[i])
-                    if (this.sts[i].stop > st.stop) st = this.sts[i]
+                    if (this.sts[i].stop >= st.stop) st = this.sts[i]
                 }
             }
 
@@ -124,14 +127,14 @@ export class PkFiniteStateMachine implements Pk {
                 sts[i].stop = this.tc
                 sts[i].dt = this.lineSegment[i + 1] - this.tc
                 sts[i].trs = sts[i].dt !== 0
-                sts[i + 1].start = sts[i].dt
+                sts[i + 1 + (tvpIndexes.some(tvp => tvp.line - 1 === i) ? this.getReplCount(i + 1) : 0)].start = sts[i].dt
             } else {
                 if (overlap) {
                     sts[i].stop = this.lineSegment[i + 1] - this.tc
-                    sts[i + 1].start = this.lineSegment[i + 1] - this.tc
+                    sts[i + 1 + (tvpIndexes.some(tvp => tvp.line - 1 === i) ? this.getReplCount(i + 1) : 0)].start = this.lineSegment[i + 1] - this.tc
                 } else {
                     sts[i].stop = this.lineSegment[i + 1]
-                    sts[i + 1].start = this.lineSegment[i + 1]
+                    sts[i + 1 + (tvpIndexes.some(tvp => tvp.line - 1 === i) ? this.getReplCount(i + 1) : 0)].start = this.lineSegment[i + 1]
                 }
             }
 
@@ -139,26 +142,43 @@ export class PkFiniteStateMachine implements Pk {
                 if (this.razlen) {
                     let maxStop = 0
                     this.tvpWithRepls.forEach(v => v.start = this.lineSegment[sts[i].line - 1])
+                    // this.tvpWithRepls.forEach(v => v.stop = this.lineSegment[sts[i].line])
+
                     // const tvpWithRepls: St[] = [this.sts[i]]
                     // for (let j = 0; j < this.getReplCount(i); j++) {
                     //     tvpWithRepls.push(this.sts[i + j + 1])
                     // }
                     for (let j = 0; j < this.tvpWithRepls.length; j++) {
-                        if (maxStop < this.tvpWithRepls[j].stop) {
-                            maxStop = this.tvpWithRepls[j].stop
+                        // if (maxStop < this.tvpWithRepls[j].stop) {
+                        //     maxStop = this.tvpWithRepls[j].stop
+                        // }
+                        if (maxStop < this.tvpWithRepls[j].stop + this.tvpWithRepls[j].dt) {
+                            maxStop = this.tvpWithRepls[j].stop + this.tvpWithRepls[j].dt
                         }
 
                         sts[i + j].num = this.tvpWithRepls[j].num
                         sts[i + j].tf = this.tvpWithRepls[j].tf
-                        sts[i + j].start = this.tvpWithRepls[j].start
-                        sts[i + j].stop = this.tvpWithRepls[j].stop
+                        sts[i + j].start = (this.tvpWithRepls[j].start >= this.tc) ? this.tvpWithRepls[j].start - this.tc : this.tvpWithRepls[j].start
+                        sts[i + j].stop = (this.tvpWithRepls[j].start >= this.tc) ? this.tvpWithRepls[j].stop - this.tc : this.tvpWithRepls[j].stop
                         sts[i + j].dt = this.tvpWithRepls[j].dt
-                        sts[i + j].trs = this.tvpWithRepls[j].trs
+                        if (this.tvpWithRepls[j].stop > this.tc && this.tvpWithRepls[j].start < this.tc) {
+                            sts[i + j].dt += this.tvpWithRepls[j].stop - this.tc
+                            sts[i + j].stop = this.tc
+                        } else if (this.tvpWithRepls[j].stop < this.tvpWithRepls[j].start) {
+                            sts[i + j].dt = this.tvpWithRepls[j].stop
+                        } else if (sts[i + j].dt !== 0) {
+                            sts[i + j].stop += sts[i + j].dt
+                            sts[i + j].dt = 0
+                        }
+                        sts[i + j].trs = sts[i + j].dt !== 0
+                        // sts[i + j].dt = this.tvpWithRepls[j].dt
+                        // sts[i + j].trs = this.tvpWithRepls[j].trs
                         // this.lineSegment.splice((i + j), 0, sts[i + j].stop + sts[i + j].dt)
                     }
-                    sts[i + this.tvpWithRepls.length].start = maxStop
-                    // i += this.tvpWithRepls.length - 1
+                    sts[i + this.tvpWithRepls.length].start = maxStop >= this.tc ? maxStop - this.tc : maxStop
+                    // this.lineSegment.splice((i + 1), 1, maxStop)
                     this.lineSegment.splice((i + 1), 0, maxStop)
+                    i += this.tvpWithRepls.length - 1
                 } else {
                     const replCount = this.getReplCount(i)
                     for (let j = 1; j < replCount + 1; j++) {
@@ -170,7 +190,11 @@ export class PkFiniteStateMachine implements Pk {
                         sts[i + j].trs = sts[i].trs
                         this.lineSegment.splice((i + j), 0, sts[i].stop + sts[i].dt)
                     }
-                    sts[i + replCount + 1].start = sts[i + replCount].stop
+                    if (sts[i + replCount].stop !== this.tc) {
+                        sts[i + replCount + 1].start = sts[i + replCount].stop
+                    } else {
+                        sts[i + replCount + 1].start = sts[i + replCount].dt
+                    }
                     i += replCount
                 }
             }
@@ -281,6 +305,14 @@ export class PkFiniteStateMachine implements Pk {
             const shiftDiff = newShift - draft.shift
             draft.shift = newShift
             draft.lineSegment = draft.lineSegment.map(dot => dot + shiftDiff)
+            draft.tvpWithRepls.forEach(v => {
+                v.start += shiftDiff
+                if (v.stop + shiftDiff < 0) {
+                    v.stop += this.tc
+                }
+                // if (v.stop === this.tc) v.stop += v.dt
+                v.stop += shiftDiff
+            })
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
