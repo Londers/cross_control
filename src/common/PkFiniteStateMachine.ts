@@ -54,7 +54,7 @@ export class PkFiniteStateMachine implements Pk {
 
         for (let st of this.sts) {
             if (replaceNums.some(repl => repl === st.tf)) {
-                if (st.trs) overlap = true
+                if (st.trs || st.stop > this.tc) overlap = true
                 continue
             }
             if (this.razlen && tvpNums.some(tvp => tvp === st.tf)) {
@@ -122,6 +122,8 @@ export class PkFiniteStateMachine implements Pk {
             sts[i].num = this.sts[i].num
             sts[i].plus = this.sts[i].plus
 
+            if (replaceNums.some(repl => repl === sts[i].tf)) sts[i].start = this.lineSegment[i - 1]
+
             if (!overlap && (this.lineSegment[i + 1] >= this.tc)) {
                 overlap = true
                 sts[i].stop = this.tc
@@ -140,18 +142,11 @@ export class PkFiniteStateMachine implements Pk {
 
             if (tvpIndexes.some(tvp => tvp.tf === sts[i].tf)) {
                 if (this.razlen) {
+                    if (this.tvpWithRepls.length === 0) continue
                     let maxStop = 0
                     this.tvpWithRepls.forEach(v => v.start = this.lineSegment[sts[i].line - 1])
-                    // this.tvpWithRepls.forEach(v => v.stop = this.lineSegment[sts[i].line])
-
-                    // const tvpWithRepls: St[] = [this.sts[i]]
-                    // for (let j = 0; j < this.getReplCount(i); j++) {
-                    //     tvpWithRepls.push(this.sts[i + j + 1])
-                    // }
                     for (let j = 0; j < this.tvpWithRepls.length; j++) {
-                        // if (maxStop < this.tvpWithRepls[j].stop) {
-                        //     maxStop = this.tvpWithRepls[j].stop
-                        // }
+                        if (this.tvpWithRepls[j].stop < this.tvpWithRepls[j].start) this.tvpWithRepls[j].stop += this.tc
                         if (maxStop < this.tvpWithRepls[j].stop + this.tvpWithRepls[j].dt) {
                             maxStop = this.tvpWithRepls[j].stop + this.tvpWithRepls[j].dt
                         }
@@ -165,19 +160,17 @@ export class PkFiniteStateMachine implements Pk {
                             sts[i + j].dt += this.tvpWithRepls[j].stop - this.tc
                             sts[i + j].stop = this.tc
                         } else if (this.tvpWithRepls[j].stop < this.tvpWithRepls[j].start) {
-                            sts[i + j].dt = this.tvpWithRepls[j].stop
+                            if (this.tvpWithRepls[j].start < this.tc) {
+                                sts[i + j].dt = this.tvpWithRepls[j].stop
+                            }
                         } else if (sts[i + j].dt !== 0) {
                             sts[i + j].stop += sts[i + j].dt
                             sts[i + j].dt = 0
                         }
                         sts[i + j].trs = sts[i + j].dt !== 0
-                        // sts[i + j].dt = this.tvpWithRepls[j].dt
-                        // sts[i + j].trs = this.tvpWithRepls[j].trs
-                        // this.lineSegment.splice((i + j), 0, sts[i + j].stop + sts[i + j].dt)
                     }
                     sts[i + this.tvpWithRepls.length].start = maxStop >= this.tc ? maxStop - this.tc : maxStop
-                    // this.lineSegment.splice((i + 1), 1, maxStop)
-                    this.lineSegment.splice((i + 1), 0, maxStop)
+                    for (let j = 0; j < this.tvpWithRepls.length - 1; j++) this.lineSegment.splice((i + 1), 0, maxStop)
                     i += this.tvpWithRepls.length - 1
                 } else {
                     const replCount = this.getReplCount(i)
@@ -281,6 +274,32 @@ export class PkFiniteStateMachine implements Pk {
                 }
                 for (let i = draft.pointer.next; i < draft.lineSegment.length; i++) {
                     draft.lineSegment[i] += diff
+
+
+                    // if (replaceNums.some(repl => repl === draft.sts[i-1].tf)) {
+                    // }
+
+                    if (tvpNums.some(tvp => tvp === draft.sts[i - 1].tf)) {
+                        if (draft.razlen) {
+                            let j = i
+                            let maxStop = draft.sts[i - 1].stop
+                            while (replaceNums.some(repl => repl === draft.sts[j].tf)) {
+                                if (maxStop < draft.sts[j].stop) maxStop = draft.sts[j].stop
+                                j++
+                            }
+                            let maxIds = []
+                            if (maxStop === draft.sts[i - 1].stop) maxIds.push(i)
+                            j = i
+                            while (replaceNums.some(repl => repl === draft.sts[j].tf)) {
+                                if (maxStop === draft.sts[j].stop) maxIds.push(draft.sts[j].line)
+                                j++
+                            }
+                            maxIds.forEach(id => {
+                                const index = draft.tvpWithRepls.findIndex(v => v.line === id)
+                                draft.tvpWithRepls[index].stop += diff
+                            })
+                        }
+                    }
                 }
                 draft.sts = draft.convertLineToSts(draft.getLinesCount())
             }
@@ -310,7 +329,6 @@ export class PkFiniteStateMachine implements Pk {
                 if (v.stop + shiftDiff < 0) {
                     v.stop += this.tc
                 }
-                // if (v.stop === this.tc) v.stop += v.dt
                 v.stop += shiftDiff
             })
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
@@ -408,11 +426,6 @@ export class PkFiniteStateMachine implements Pk {
                 }
             }
 
-            // if (!deleteTvp) {
-            //     draft.sts = draft.convertLineToSts(draft.getLinesCount())
-            //     return
-            // }
-
             if (tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) {
                 const replCount = draft.getReplCount(draft.pointer.current)
                 for (let i = 0; i < replCount + 1; i++) {
@@ -446,25 +459,6 @@ export class PkFiniteStateMachine implements Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
             draft.sts[draft.pointer.current].tf = type
         }).getPk()
-
-        // this.sts[this.pointer.current].tf = type
-        // if (this.sts[this.pointer.current].num === 0) this.sts[this.pointer.current].num = 1
-        // switch (type) {
-        //     case 1:
-        //     case 8:
-        //         this.sts[this.pointer.current].num = 0
-        //         break
-        //     case 2:
-        //     case 3:
-        //         // твп 1, твп2
-        //         break
-        //     case 4:
-        //         // твп 1,2
-        //         break
-        //     default:
-        //         break
-        // }
-        // return this.getPk()
     }
 
     changePhaseNum(num: number): Pk {

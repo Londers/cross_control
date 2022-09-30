@@ -61,7 +61,11 @@ function PkTab(props: { pk: number, setPk: Function }) {
 
     const handlePkSwitchInsert = (event: SelectChangeEvent<number>) => {
         if (currentPk) {
-            changePk(pkFSM.insertLine(Number(event.target.value)))
+            const rowForFSM = selectedRow[0] === 0 ? 0 : selectedRow[0] - 1
+            const razlen = currentPk.razlen
+            let tempFSM = new PkFiniteStateMachine(pkFSM.changeRazlen(false), rowForFSM)
+            tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(Number(event.target.value)), rowForFSM)
+            changePk(tempFSM.changeRazlen(razlen))
         }
         setSelectedInsert(-1)
     }

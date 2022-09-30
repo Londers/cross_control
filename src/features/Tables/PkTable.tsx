@@ -56,8 +56,11 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                         if (props.currentPk) {
                             const newTf = Number(event.target.value)
                             if (tvpNums.some(tvp => tvp === newTf)) {
+                                const razlen = props.currentPk.razlen
                                 const rowForFSM = props.currentRow === 0 ? 0 : props.currentRow - 1
-                                let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf), rowForFSM)
+
+                                let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeRazlen(false), rowForFSM)
+                                tempFSM = new PkFiniteStateMachine(tempFSM.changeType(newTf), rowForFSM)
 
                                 if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow]?.tf)) {
                                     const duration = props.currentPk.sts[rowForFSM].stop - props.currentPk.sts[rowForFSM].start + props.currentPk.sts[rowForFSM].dt
@@ -69,10 +72,13 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                                 if (newTf === 4) {
                                     tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(7), rowForFSM)
                                     tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(6, 3), rowForFSM)
-                                    changePk(tempFSM.insertLine(5, 2))
+                                    tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(5, 2), rowForFSM)
+                                    // changePk(tempFSM.insertLine(5, 2))
                                 } else {
-                                    changePk(tempFSM.insertLine(7))
+                                    tempFSM = new PkFiniteStateMachine(tempFSM.insertLine(7), rowForFSM)
+                                    // changePk(tempFSM.insertLine(7))
                                 }
+                                changePk(tempFSM.changeRazlen(razlen))
                             } else if (replaceNums.some(repl => repl === props.currentPk.sts[props.currentRow]?.tf)) {
                                 let tempFSM = new PkFiniteStateMachine(props.pkFSM.changeType(newTf), props.currentRow)
                                 changePk(tempFSM.deleteLine(true))
