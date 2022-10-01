@@ -84,18 +84,22 @@ function PkTab(props: { pk: number, setPk: Function }) {
     }
 
     const handlePkCopy = () => {
-
+        localStorage.setItem("pkCopy", JSON.stringify(currentPk))
     }
     const handlePkInsert = () => {
-
+        let pkCopy: Pk = JSON.parse(localStorage.getItem("pkCopy") ?? "{}")
+        pkCopy.desc = currentPk?.desc ?? "Ошибка копирования"
+        pkCopy.pk = currentPk?.pk ?? -1
+        changePk(pkCopy)
     }
 
     const handlePkReload = () => {
         dispatch(reloadPk(props.pk - 1))
     }
     const handlePkCreate = () => {
-
+        if (currentPk) changePk(pkFSM.createNewPk())
     }
+
     return (
         <Box style={{border: ".5px solid"}}>
             <div style={{display: "inline-flex", marginTop: "1rem"}}>

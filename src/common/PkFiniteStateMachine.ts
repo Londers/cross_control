@@ -246,8 +246,13 @@ export class PkFiniteStateMachine implements Pk {
     changeTc(newTc: number): Pk {
         return produce(this, draft => {
             if (newTc < 3) {
-
+                draft.tc = newTc
+                return
             } else {
+                if (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
+                    while (!tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) draft.pointer.decrement()
+                }
+
                 draft.pointer = new Pointer(draft.pointer.current, draft.lineSegment.length)
                 if (newTc > 255) newTc = 255
                 if (newTc < minPhaseDuration * draft.getLinesCount()) newTc = minPhaseDuration * draft.getLinesCount()
@@ -281,23 +286,7 @@ export class PkFiniteStateMachine implements Pk {
 
                     if (tvpNums.some(tvp => tvp === draft.sts[i - 1].tf)) {
                         if (draft.razlen) {
-                            let j = i
-                            let maxStop = draft.sts[i - 1].stop
-                            while (replaceNums.some(repl => repl === draft.sts[j].tf)) {
-                                if (maxStop < draft.sts[j].stop) maxStop = draft.sts[j].stop
-                                j++
-                            }
-                            let maxIds = []
-                            if (maxStop === draft.sts[i - 1].stop) maxIds.push(i)
-                            j = i
-                            while (replaceNums.some(repl => repl === draft.sts[j].tf)) {
-                                if (maxStop === draft.sts[j].stop) maxIds.push(draft.sts[j].line)
-                                j++
-                            }
-                            maxIds.forEach(id => {
-                                const index = draft.tvpWithRepls.findIndex(v => v.line === id)
-                                draft.tvpWithRepls[index].stop += diff
-                            })
+                            for (let j = 0; j < this.tvpWithRepls.length; j++) draft.tvpWithRepls[j].stop += diff
                         }
                     }
                 }
@@ -590,6 +579,20 @@ export class PkFiniteStateMachine implements Pk {
     changePlus(plus: boolean): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
             draft.sts[draft.pointer.current].plus = plus
+        }).getPk()
+    }
+
+    createNewPk(): Pk {
+        return produce<PkFiniteStateMachine>(this, draft => {
+            const sts = Array.from({length: 12}, (v, i) => {
+                return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
+            })
+            sts[0].stop = Math.floor(draft.tc / 2) + draft.tc % 2
+            sts[0].num = 1
+            sts[1].start = sts[0].stop
+            sts[1].num = 2
+            sts[1].stop = draft.tc
+            draft.sts = sts
         }).getPk()
     }
 }
