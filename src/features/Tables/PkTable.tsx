@@ -178,7 +178,8 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
     })
 
     return (
-        <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        // <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        <div style={{height: "525px", width: "46.5%", display: "flex", alignItems: "flex-start"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}

@@ -1,6 +1,7 @@
 import {CrossControlInfoMsg, CustomTimestamp, Gk, Line, Nk, Pk, SetupDK, Sk, Stage, State, Use} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
+import {sizeVerification} from "../common/otherFunctions";
 
 
 const initialState: CrossControlInfoMsg = {
@@ -16,7 +17,7 @@ export const crossInfoSlice = createSlice({
     initialState,
     reducers: {
         setCrossInfo: (state, action: PayloadAction<CrossControlInfoMsg>) => {
-            Object.assign(state, action.payload)
+            Object.assign(state, {...action.payload, state: {...sizeVerification(action.payload.state)}})
         },
         setState: (state, action: PayloadAction<State>) => {
             state.state = action.payload

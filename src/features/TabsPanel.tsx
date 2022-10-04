@@ -51,7 +51,7 @@ function TabsPanel() {
     }
 
     return (
-        <Box sx={{width: "99%", height: "90vh", border: ".5px solid"}}>
+        <Box sx={{width: "99%", height: "90vh"}}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={value} onChange={handleChange} aria-label="tabs">
                     <Tab label="Основные" {...allyProps(0)} />

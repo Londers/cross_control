@@ -3,18 +3,84 @@ export interface IncomingWebSocketMessage {
     data: IncomingDataType;
 }
 
-export type IncomingDataType = CrossControlInfoMsg
+export type IncomingDataType = CrossControlInfoMsg | CheckMsg | SendMsg | CreateMsg | EditInfoMsg | DeleteMsg
 
 export type OutcomingWebSocketMessage = OutcomingDataType
 
-export type OutcomingDataType = any
+export type OutcomingDataType =
+    SendCheckMsg
+    | SendSendMsg
+    | SendCreateMsg
+    | SendReloadMsg
+    | SendEditInfoMsg
+    | SendDispatch
+    | SendDeleteMsg
 
+// incoming
 export interface CrossControlInfoMsg {
     areaMap: AreaMap;
     deviceIP: string;
     edit: boolean;
     history: History[];
     state: State | undefined;
+}
+export interface CheckMsg {
+    result: string[];
+    status: boolean;
+}
+export interface SendMsg {
+    state?: State;
+    status: boolean;
+    user?: string;
+}
+export interface CreateMsg {
+    message?: string
+    status?: boolean
+    result?: string
+}
+export interface EditInfoMsg {
+    users: { user: string, edit: boolean }[];
+}
+export interface DeleteMsg {
+    status: boolean;
+}
+
+// outcoming
+export interface SendCheckMsg {
+    type: string;
+    state: State;
+}
+
+export interface SendSendMsg {
+    type: string;
+    state: State;
+    rePaint: boolean;
+}
+
+export interface SendCreateMsg {
+    type: string;
+    state: State;
+    z: number;
+}
+
+export interface SendReloadMsg {
+    type: string
+}
+
+export interface SendEditInfoMsg {
+    type: string;
+}
+
+export interface SendDispatch {
+    type: string;
+    id: number;
+    cmd: number;
+    param: number;
+}
+
+export interface SendDeleteMsg {
+    type: string
+    state: State;
 }
 
 export interface State {

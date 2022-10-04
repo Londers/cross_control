@@ -23,14 +23,16 @@ function KvTable(props: { Stages: Stage[] | undefined }) {
     }
 
     const columns: GridColumns = [
-        {field: "line", headerName: "№ стр.", flex: 1},
+        {field: "line", headerName: "№ стр.", flex: 1, headerAlign: "center", align: "center",},
         {
             field: "kvStart",
             headerName: "Т начала",
             type: "string",
             ...defaultColumnOptions,
             renderCell: (params) =>
-                <CustomTimePicker date={params.value} setDate={null} disabled={true}/>
+                <CustomTimePicker date={params.value} setDate={null} disabled={true}/>,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "kvEnd",
@@ -42,7 +44,9 @@ function KvTable(props: { Stages: Stage[] | undefined }) {
                                   setDate={(e: Date) => {
                                       changeKvTime(Number(params.id), {hour: e.getHours(), min: e.getMinutes()})
                                   }}
-                                  disabled={false}/>
+                                  disabled={false}/>,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "lenTVP",
@@ -54,6 +58,8 @@ function KvTable(props: { Stages: Stage[] | undefined }) {
                 changeKvTVP(Number(params.id), Number(params.props.value))
                 return {...params.props};
             },
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "lenMGR",
@@ -65,6 +71,8 @@ function KvTable(props: { Stages: Stage[] | undefined }) {
                 changeKvMGR(Number(params.id), Number(params.props.value))
                 return {...params.props};
             },
+            headerAlign: "center",
+            align: "center",
         },
     ]
 
@@ -80,7 +88,7 @@ function KvTable(props: { Stages: Stage[] | undefined }) {
     })
 
     return (
-        <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        <div style={{height: "474px", width: "100%", marginInline: "auto"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}
@@ -88,6 +96,7 @@ function KvTable(props: { Stages: Stage[] | undefined }) {
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
                 hideFooter
+                sx={{borderBottom: "none"}}
             />}
         </div>
     )

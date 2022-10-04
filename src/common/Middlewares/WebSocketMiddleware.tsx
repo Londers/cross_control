@@ -40,8 +40,9 @@ WebSocketListenerMiddleware.startListening({
         } else if (wsGetMessage.match(action)) {
             switch (action.payload.type) {
                 case "controlInfo":
-                    listenerApi.dispatch(setCrossInfo(action.payload.data as CrossControlInfoMsg))
-                    listenerApi.dispatch(setStateSave(action.payload.data.state as State))
+                    const crossControlInfo: CrossControlInfoMsg = action.payload.data as CrossControlInfoMsg
+                    listenerApi.dispatch(setCrossInfo(crossControlInfo))
+                    listenerApi.dispatch(setStateSave(crossControlInfo.state as State))
                     break;
                 // case "crossBuild":
                 //     listenerApi.dispatch(setInitialData(action.payload.data as CrossBuildMsg))

@@ -1,8 +1,8 @@
 import {
-    Box,
     Button,
-    Checkbox, FormControl,
-    FormControlLabel,
+    Checkbox,
+    FormControl,
+    FormControlLabel, Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -101,8 +101,13 @@ function PkTab(props: { pk: number, setPk: Function }) {
     }
 
     return (
-        <Box style={{border: ".5px solid"}}>
-            <div style={{display: "inline-flex", marginTop: "1rem"}}>
+        <Grid
+            container
+            direction="column"
+            justifyContent="space-around"
+            alignItems="flex-start"
+        >
+            <Grid item xs style={{width: "30rem", display: "flex", justifyContent: "space-between"}}>
                 <Select
                     value={props.pk}
                     onChange={handlePkSelectChange}
@@ -110,6 +115,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     {crossInfo.state?.arrays.SetDK.dk.map(pk =>
                         <MenuItem value={pk.pk} key={pk.pk}>ПК {pk.pk}</MenuItem>)}
                 </Select>
+
                 <Button variant="outlined" title="Копировать ПК" onClick={handlePkCopy}>
                     <CopyIcon width={width} height={height}/>
                 </Button>
@@ -122,18 +128,18 @@ function PkTab(props: { pk: number, setPk: Function }) {
                 <Button variant="outlined" title="Создать ПК" onClick={handlePkCreate}>
                     <CreateIcon width={width} height={height}/>
                 </Button>
-            </div>
-            <br/>
-            <div style={{marginTop: "1rem"}}>
+            </Grid>
+
+            <Grid item xs style={{marginTop: "1rem"}}>
                 <TextField
                     label="Описание"
                     type="text"
                     value={currentPk?.desc ?? ""}
                     onChange={handlePkDescChange}
                 />
-            </div>
-            <br/>
-            <div>
+            </Grid>
+
+            <Grid item xs style={{marginTop: "1rem", width: "50rem", display: "flex", justifyContent: "space-between"}}>
                 <TextField
                     label="Время цикла"
                     type="text"
@@ -184,9 +190,9 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     label="перенос"
                     labelPlacement="end"
                 />
-            </div>
-            <br/>
-            <div>
+            </Grid>
+
+            <Grid item xs style={{marginTop: "1rem", width: "50rem", display: "flex", justifyContent: "space-between"}}>
                 <Select onChange={handlePkSwitchInsert} value={selectedInsert}>
                     <MenuItem value={-1} key={0}>Вставить перекл.</MenuItem>)
                     <MenuItem value={0} key={1}> </MenuItem>)
@@ -217,14 +223,14 @@ function PkTab(props: { pk: number, setPk: Function }) {
                         <MenuItem value={1} key={1}>Вр. влкючения</MenuItem>)
                     </Select>
                 </FormControl>
-            </div>
-            <br/>
-            <div>
+            </Grid>
+
+            <Grid item xs style={{width:"100%", marginTop: "1rem"}}>
                 {currentPk && <PkTable currentPk={currentPk} pkNum={props.pk} currentRow={selectedRow[0]}
                                        setCurrentRow={setSelectedRow}
                                        pkFSM={pkFSM}/>}
-            </div>
-        </Box>
+            </Grid>
+        </Grid>
     )
 }
 

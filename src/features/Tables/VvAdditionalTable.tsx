@@ -11,9 +11,17 @@ const defaultColumnOptions = {
 }
 
 const columns: GridColumns = [
-    {field: "name", headerName: "№ Назн. ф", type: "string", flex: 2, editable: false, sortable: false},
+    {
+        field: "name",
+        headerName: "№ Назн. ф",
+        type: "string",
+        flex: 2,
+        editable: false,
+        sortable: false,
+        headerAlign: "center",
+        align: "center",
+    },
 ]
-
 
 function VvAdditionalTable(props: { SetTimeUse: SetTimeUse | undefined }) {
     const dispatch = useAppDispatch()
@@ -28,6 +36,8 @@ function VvAdditionalTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 ...defaultColumnOptions,
                 field: i.toString(),
                 headerName: (i + 1).toString(),
+                headerAlign: "center",
+                align: "center",
                 preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                     changeNotwork(i, Number(params.props.value))
                     return {...params.props}
@@ -47,6 +57,7 @@ function VvAdditionalTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
                 hideFooter
+                sx={{borderBottom: "none"}}
             />}
         </div>
     )

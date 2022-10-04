@@ -19,14 +19,23 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
     }
 
     const columns: GridColumns = [
-        {field: "pageNum", headerName: "№ нед. карты", ...defaultColumnOptions, flex: 2, editable: false},
+        {
+            field: "pageNum",
+            headerName: "№ нед. карты", ...defaultColumnOptions,
+            flex: 2,
+            editable: false,
+            headerAlign: "center",
+            align: "center",
+        },
         {
             field: "monday", headerName: "пн.",
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 changeNk(params.row.pageNum - 1, 0, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "tuesday", headerName: "вт.",
@@ -34,7 +43,9 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 changeNk(params.row.pageNum - 1, 1, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "wednesday", headerName: "ср.",
@@ -42,7 +53,9 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 changeNk(params.row.pageNum - 1, 2, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "thursday", headerName: "чт.",
@@ -50,7 +63,9 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 changeNk(params.row.pageNum - 1, 3, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "friday", headerName: "пт.",
@@ -58,7 +73,9 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 changeNk(params.row.pageNum - 1, 4, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "saturday", headerName: "сб.",
@@ -66,7 +83,9 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 changeNk(params.row.pageNum - 1, 5, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "sunday", headerName: "вс.",
@@ -74,7 +93,9 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 changeNk(params.row.pageNum - 1, 6, Number(params.props.value))
                 return {...params.props}
             },
-            ...defaultColumnOptions
+            ...defaultColumnOptions,
+            headerAlign: "center",
+            align: "center",
         },
     ]
 
@@ -93,7 +114,7 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
     })
 
     return (
-        <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        <div style={{height: "682px", width: "40%", display: "flex", alignItems: "flex-start"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}
@@ -101,6 +122,7 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
                 hideFooter
+                sx={{borderBottom: "none"}}
             />}
         </div>
     )

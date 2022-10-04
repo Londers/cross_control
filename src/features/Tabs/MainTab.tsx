@@ -1,10 +1,10 @@
 import React, {ChangeEvent} from "react";
 import {
-    Box,
     Button,
     Checkbox,
     FormControl,
     FormControlLabel,
+    Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -29,10 +29,12 @@ import {
     setDevicePspd,
     setDeviceSubarea,
     setDeviceType,
-    setDeviceTz,
+    setDeviceTz, setState,
 } from "../crossInfoSlice";
 import SetupDKTable from "../Tables/SetupDKTable";
 import {reloadMainTab} from "../../common/Middlewares/TabReloadMiddleware";
+import {sizeVerification} from "../../common/otherFunctions";
+import {State} from "../../common";
 
 // import {selectStateSave} from "../stateSaveSlice";
 
@@ -84,7 +86,10 @@ function MainTab() {
     }
 
     const handlePspdChange = (event: SelectChangeEvent<string>) => {
-        dispatch(setDevicePspd(event.target.value))
+        // dispatch(setDevicePspd(event.target.value))
+        const [, vpcpdr] = event.target.value.split(".").map(v => Number(v))
+        if (crossInfo.state) dispatch(setState(sizeVerification({...crossInfo.state, Model: {...crossInfo.state.Model, vpcpdr}})))
+
     }
 
     const handlePbslChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -104,17 +109,22 @@ function MainTab() {
     }
 
     return (
-        <Box style={{border: ".5px solid"}}>
-            <div>
-                <Button variant="outlined" title="Отменить изменения" onClick={handleReloadTabClick}>
+        <Grid
+            container
+            direction="column"
+            justifyContent="space-around"
+            alignItems="flex-start"
+        >
+            <Grid item xs>
+                <Button variant="outlined" title="Отменить изменения" onClick={handleReloadTabClick}
+                        style={{marginRight: "1rem"}}>
                     <ReloadIcon width={width} height={height}/>
                 </Button>
                 <Button variant="outlined">
                     <TimeIcon width={width} height={height}/>
                 </Button>
-            </div>
-            <br/>
-            <div style={{marginTop: "1rem"}}>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem", width: "42rem", display: "flex", justifyContent: "space-between"}}>
                 <FormControl sx={{width: "fit-content", minWidth: "90px"}}>
                     <InputLabel id="demo-simple-select-label">Устройство</InputLabel>
                     <Select
@@ -166,13 +176,11 @@ function MainTab() {
                     value={crossInfo.state?.subarea ?? -1}
                     onChange={handleSubareaChange}
                 />
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem"}}>
                 <Button variant="outlined" onClick={() => alert("in work")}>Выберите координаты</Button>
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem"}}>
                 <TextField
                     label="Место размещения"
                     fullWidth
@@ -180,9 +188,8 @@ function MainTab() {
                     value={crossInfo.state?.name ?? -1}
                     onChange={handleNameChange}
                 />
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem"}}>
                 <TextField
                     label="№ телефона"
                     // inputProps={{pattern: "^([0-9]{1,4}\\-){3}[0-9]{1,3}$"}}
@@ -191,13 +198,11 @@ function MainTab() {
                     value={crossInfo.state?.phone.trim() ?? -1}
                     onChange={handlePhoneChange}
                 />
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem"}}>
                 IP: {crossInfo.deviceIP}
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem", width: "50rem", display: "flex", justifyContent: "space-between"}}>
                 <TextField
                     label="Часовой пояс"
                     type="number"
@@ -217,10 +222,9 @@ function MainTab() {
                     type="number"
                     style={{width: "250px"}}
                 />
-            </div>
-            <br/>
-            <div>
-                Версия ПО
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem", width: "30rem", display: "flex", justifyContent: "space-between"}}>
+                <span style={{display: "flex", alignItems: "center",}}>Версия ПО</span>
                 <FormControl sx={{width: "fit-content", minWidth: "90px"}}>
                     <InputLabel id="demo-simple-select-label">ПСПД</InputLabel>
                     <Select
@@ -234,27 +238,29 @@ function MainTab() {
                         <MenuItem value="12.4" key={1}>12.4 и больше</MenuItem>
                     </Select>
                 </FormControl>
-                <TextField
-                    label="ПБС"
-                    type="number"
-                    style={{width: "75px"}}
-                    value={crossInfo.state?.Model.vpbsl ?? -1}
-                    onChange={handlePbslChange}
-                />
-                <span>.</span>
-                <TextField
-                    type="number"
-                    style={{width: "75px"}}
-                    value={crossInfo.state?.Model.vpbsr ?? -1}
-                    onChange={handlePbsrChange}
-                />
-            </div>
-            <br/>
-            <div>
+                <div style={{display: "inline-flex"}}>
+                    <TextField
+                        label="ПБС"
+                        type="number"
+                        style={{width: "75px"}}
+                        value={crossInfo.state?.Model.vpbsl ?? -1}
+                        onChange={handlePbslChange}
+                    />
+                    <span style={{display: "flex", alignItems: "center", fontSize: "22px"}}>.</span>
+                    <TextField
+                        type="number"
+                        style={{width: "75px"}}
+                        value={crossInfo.state?.Model.vpbsr ?? -1}
+                        onChange={handlePbsrChange}
+                    />
+                </div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem", width: "70rem", display: "flex", justifyContent: "space-between"}}>
                 <FormControlLabel
                     control={<Checkbox/>}
                     label="Запрет Неподчинение"
                     labelPlacement="start"
+                    style={{marginLeft: 0}}
                 />
                 <FormControlLabel
                     control={<Checkbox/>}
@@ -278,15 +284,17 @@ function MainTab() {
                     label="Журнал. Запрет GPRS"
                     labelPlacement="start"
                 />
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem"}}>
+                Параметры ДК
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem"}}>
                 <SetupDKTable/>
                 {/*{*/}
                 {/*    crossInfo.state?.arrays.SetupDK && <SetupDKTable setup={crossInfo.state?.arrays.SetupDK}/>*/}
                 {/*}*/}
-            </div>
-        </Box>
+            </Grid>
+        </Grid>
     )
 }
 

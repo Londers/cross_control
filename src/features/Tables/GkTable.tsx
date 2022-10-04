@@ -11,7 +11,7 @@ const defaultColumnOptions = {
 }
 
 const columns: GridColumns = [
-    {field: "pageNum", headerName: "месяц", flex: 15, editable: false, sortable: false,},
+    {field: "pageNum", headerName: "Месяц", flex: 15, editable: false, sortable: false, headerAlign: "center", align: "center",},
 ]
 
 function GkTable(props: { currentGk: Gk[] | undefined }) {
@@ -27,6 +27,8 @@ function GkTable(props: { currentGk: Gk[] | undefined }) {
                 ...defaultColumnOptions,
                 field: i.toString(),
                 headerName: (i + 1).toString(),
+                headerAlign: "center",
+                align: "center",
                 preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                     changeGk(params.row.pageNum - 1, i, Number(params.props.value))
                     return {...params.props}
@@ -44,7 +46,7 @@ function GkTable(props: { currentGk: Gk[] | undefined }) {
     })
 
     return (
-        <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        <div style={{height: "682px", width: "95%", display: "flex", alignItems: "flex-start"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}
@@ -52,6 +54,7 @@ function GkTable(props: { currentGk: Gk[] | undefined }) {
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
                 hideFooter
+                sx={{borderBottom: "none"}}
             />}
         </div>
     )

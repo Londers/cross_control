@@ -1,7 +1,8 @@
 import {createAction, createListenerMiddleware, isAnyOf} from "@reduxjs/toolkit";
 import {RootState} from "../../app/store";
-import {setState} from "../../features/crossInfoSlice";
+import {setDevicePspd, setState} from "../../features/crossInfoSlice";
 import produce from "immer";
+import {Defstatis, Pointset, SetTimeUse, Use, Useinput} from "../index";
 
 export const reloadMainTab = createAction("reload/mainTab")
 export const reloadPkTab = createAction("reload/PkTab")
@@ -11,11 +12,12 @@ export const reloadNkTab = createAction("reload/NkTab")
 export const reloadGkTab = createAction("reload/GkTab")
 // export const reloadVvTab = createAction("reload/VvTab")
 export const reloadKvTab = createAction("reload/KvTab")
+// export const prepareVVTab = createAction("reload/prepareVV")
 
 export const TabReloadMiddleware = createListenerMiddleware()
 
 TabReloadMiddleware.startListening({
-    matcher: isAnyOf(reloadMainTab, reloadPkTab, reloadPk, reloadSkTab, reloadNkTab, reloadGkTab, reloadKvTab),
+    matcher: isAnyOf(reloadMainTab, reloadPkTab, reloadPk, reloadSkTab, reloadNkTab, reloadGkTab, reloadKvTab,  setDevicePspd),
     effect: async (action, listenerApi) => {
         const state = listenerApi.getState() as RootState
         const currentDeviceState = state.crossInfo.state
@@ -70,7 +72,7 @@ TabReloadMiddleware.startListening({
                     draft.arrays.MonthSets = savedDeviceState.arrays.MonthSets
                 })
             ))
-        // } else if (reloadVvTab.match(action)) {
+            // } else if (reloadVvTab.match(action)) {
         } else if (reloadKvTab.match(action)) {
             listenerApi.dispatch(setState(
                 produce(currentDeviceState, draft => {

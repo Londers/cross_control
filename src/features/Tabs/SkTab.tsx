@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
+import {Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {addSkLine, deleteSkLine, selectCrossInfo, updateSk} from "../crossInfoSlice";
 import CopyIcon from "../../common/icons/CopyIcon";
@@ -57,8 +57,13 @@ function SkTab(props: { sk: number, setSk: Function }) {
     }
 
     return (
-        <Box style={{border: ".5px solid"}}>
-            <div style={{display: "inline-flex", marginTop: "1rem"}}>
+        <Grid
+            container
+            direction="column"
+            justifyContent="space-around"
+            alignItems="flex-start"
+        >
+            <Grid item xs style={{width: "42rem", display: "flex", justifyContent: "space-between"}}>
                 <FormControl sx={{width: "fit-content", minWidth: "100px"}}>
                     <InputLabel id="demo-simple-select-label">№ сут. карты</InputLabel>
                     <Select
@@ -91,13 +96,13 @@ function SkTab(props: { sk: number, setSk: Function }) {
                 <Button variant="outlined" title="Создать" onClick={handleCreateButton}>
                     <CreateIcon width={width} height={height}/>
                 </Button>
-            </div>
-            <br/>
-            <div>
+            </Grid>
+
+            <Grid item xs style={{marginTop: "1rem", width: "100%", display: "flex", justifyContent: "space-between"}}>
                 <SkTable skNum={props.sk} currentSk={currentSk} line={selectedLine} setLine={setSelectedLine}/>
                 {/*<SkTable skNum={props.sk} currentSk={currentSk} currentRow={selectedRow} setCurrentRow={setSelectedRow}/>*/}
-            </div>
-        </Box>
+            </Grid>
+        </Grid>
     )
 }
 

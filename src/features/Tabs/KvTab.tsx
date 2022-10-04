@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Button} from "@mui/material";
+import {Box, Button, Grid} from "@mui/material";
 import CopyIcon from "../../common/icons/CopyIcon";
 import InsertIcon from "../../common/icons/InsertIcon";
 import ReloadIcon from "../../common/icons/ReloadIcon";
@@ -33,8 +33,13 @@ function KvTab() {
     }
 
     return (
-        <Box style={{border: ".5px solid"}}>
-            <div style={{display: "inline-flex", marginTop: "1rem"}}>
+        <Grid
+            container
+            direction="column"
+            justifyContent="space-around"
+            alignItems="flex-start"
+        >
+            <Grid item xs style={{marginTop: "1rem", width: "20rem", display: "flex", justifyContent: "space-between"}}>
                 <Button variant="outlined" title="Копировать" onClick={handleCopyButton}>
                     <CopyIcon width={width} height={height}/>
                 </Button>
@@ -44,12 +49,11 @@ function KvTab() {
                 <Button variant="outlined" title="Загрузить" onClick={handleReloadButton}>
                     <ReloadIcon width={width} height={height}/>
                 </Button>
-            </div>
-            <br/>
-            <div>
+            </Grid>
+            <Grid item xs style={{marginTop: "1rem", width: "50rem"}}>
                 <KvTable Stages={stages}/>
-            </div>
-        </Box>
+            </Grid>
+        </Grid>
     )
 }
 

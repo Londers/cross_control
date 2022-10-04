@@ -19,13 +19,15 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSe
     }
 
     const columns: GridColumns = [
-        {field: "pageNum", headerName: "№ стр.", ...defaultColumnOptions},
+        {field: "pageNum", headerName: "№ стр.", ...defaultColumnOptions, headerAlign: "center", align: "center",},
         {
             field: "start",
             headerName: "Т начала",
             ...defaultColumnOptions,
             renderCell: (params) =>
-                <CustomTimePicker date={params.value} setDate={null} disabled={true}/>
+                <CustomTimePicker date={params.value} setDate={null} disabled={true}/>,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "end",
@@ -35,7 +37,11 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSe
                 <CustomTimePicker
                     date={params.value}
                     setDate={(e: Date) => {
-                        changeSkLine(Number(params.id), {hour: e.getHours(), min: e.getMinutes(), npk: Number(params.row.npk)})
+                        changeSkLine(Number(params.id), {
+                            hour: e.getHours(),
+                            min: e.getMinutes(),
+                            npk: Number(params.row.npk)
+                        })
                     }}
                     // min={
                     //     (params.row.pageNum === 1) || ((params.row.pageNum) === (props.currentSk?.count ?? -1)) ?
@@ -43,7 +49,9 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSe
                     //         new Date(0, 0, 0, props.currentSk?.lines[params.row.pageNum - 2].hour, props.currentSk?.lines[params.row.pageNum - 2].min)
                     // }
                     disabled={false}
-                />
+                />,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "npk",
@@ -51,9 +59,14 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSe
             ...defaultColumnOptions,
             editable: true,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-                if (props.currentSk) changeSkLine(Number(params.id), {...props.currentSk.lines[Number(params.id)], npk: Number(params.props.value)})
+                if (props.currentSk) changeSkLine(Number(params.id), {
+                    ...props.currentSk.lines[Number(params.id)],
+                    npk: Number(params.props.value)
+                })
                 return {...params.props};
             },
+            headerAlign: "center",
+            align: "center",
         },
     ]
 
@@ -70,7 +83,7 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSe
     })
 
     return (
-        <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        <div style={{height: "682px", width: "42rem", display: "flex", alignItems: "flex-start"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}
@@ -82,6 +95,7 @@ function SkTable(props: { skNum: number, currentSk: Sk | undefined, line: GridSe
                     props.setLine(newSelectionModel);
                 }}
                 selectionModel={props.line}
+                sx={{borderBottom: "none"}}
             />}
         </div>
     )

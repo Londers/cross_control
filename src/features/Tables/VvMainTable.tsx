@@ -1,8 +1,8 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {SetTimeUse, Use} from "../../common";
-import {useAppDispatch} from "../../app/hooks";
-import {updateTimeUse} from "../crossInfoSlice";
+import {useAppDispatch, useAppSelector} from "../../app/hooks";
+import {selectCrossInfo, setDevicePspd, updateTimeUse} from "../crossInfoSlice";
 
 const defaultColumnOptions = {
     flex: 1,
@@ -15,9 +15,16 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
     const changeTimeUse = (id: number, use: Use) => {
         dispatch(updateTimeUse({id, use}))
     }
-
+    const state = useAppSelector(selectCrossInfo).state
     const columns: GridColumns = [
-        {field: "name", headerName: "№ Назн.", type: "string", ...defaultColumnOptions, editable: false},
+        {
+            field: "name",
+            headerName: "№ Назн.",
+            type: "string", ...defaultColumnOptions,
+            editable: false,
+            headerAlign: "center",
+            align: "center",
+        },
         {
             field: "type",
             headerName: "Тип стат.",
@@ -29,6 +36,8 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 changeTimeUse(Number(params.id), newTimeUse)
                 return {...params.row}
             },
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "tvps",
@@ -41,6 +50,9 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 changeTimeUse(Number(params.id), newTimeUse)
                 return {...params.row}
             },
+            flex: 2,
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "dk",
@@ -53,19 +65,22 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 changeTimeUse(Number(params.id), newTimeUse)
                 return {...params.row}
             },
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "fazes",
             headerName: "Фазы",
             type: "string",
-            headerAlign: "right",
-            align: "right", ...defaultColumnOptions,
+            ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 const newTimeUse = {...params.row, fazes: params.props.value}
                 delete newTimeUse.id
                 changeTimeUse(Number(params.id), newTimeUse)
                 return {...params.row}
             },
+            headerAlign: "center",
+            align: "center",
         },
         {
             field: "long",
@@ -78,15 +93,19 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 changeTimeUse(Number(params.id), newTimeUse)
                 return {...params.row}
             },
+            headerAlign: "center",
+            align: "center",
         },
     ]
+
+    // useEffect(() => {dispatch(setDevicePspd(state?.Model.vpcpdl + "." + state?.Model.vpcpdr))})
 
     const rows = props.SetTimeUse?.uses.map((use, index) => {
         return {id: index, ...use}
     })
 
     return (
-        <div style={{height: "500px", width: "60%", marginInline: "auto"}}>
+        <div style={{height: "473.5px", width: "100%", marginInline: "auto"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}
@@ -94,6 +113,7 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
                 experimentalFeatures={{newEditingApi: true}}
                 disableColumnMenu
                 hideFooter
+                sx={{borderBottom: "none"}}
             />}
         </div>
     )
