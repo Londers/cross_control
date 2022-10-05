@@ -3,7 +3,7 @@ export interface IncomingWebSocketMessage {
     data: IncomingDataType;
 }
 
-export type IncomingDataType = CrossControlInfoMsg | CheckMsg | SendMsg | CreateMsg | EditInfoMsg | DeleteMsg
+export type IncomingDataType = CrossControlInfoMsg | CheckMsg | SendMsg | CreateMsg | EditInfoMsg | ChaneEditMsg | DeleteMsg
 
 export type OutcomingWebSocketMessage = OutcomingDataType
 
@@ -40,6 +40,9 @@ export interface CreateMsg {
 }
 export interface EditInfoMsg {
     users: { user: string, edit: boolean }[];
+}
+export interface ChaneEditMsg {
+    edit: boolean
 }
 export interface DeleteMsg {
     status: boolean;

@@ -42,7 +42,7 @@ function allyProps(index: number) {
 }
 
 function TabsPanel() {
-    const [value, setValue] = React.useState(1)
+    const [value, setValue] = React.useState(0)
     const [pk, setPk] = React.useState(1)
     const [sk, setSk] = React.useState(1)
 
@@ -51,7 +51,7 @@ function TabsPanel() {
     }
 
     return (
-        <Box sx={{width: "99%", height: "90vh"}}>
+        <Box sx={{width: "100%", height: "90vh"}}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={value} onChange={handleChange} aria-label="tabs">
                     <Tab label="Основные" {...allyProps(0)} />

@@ -1,7 +1,7 @@
 import React from "react";
 import {CustomTimestamp, Stage} from "../../common";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
-import CustomTimePicker from "../Custom/CustomTimePicker";
+import CustomTimePicker from "../Other/CustomTimePicker";
 import {useAppDispatch} from "../../app/hooks";
 import {updateKvMGR, updateKvTime, updateKvTVP} from "../crossInfoSlice";
 

@@ -4,14 +4,16 @@ import {Gk} from "../../common";
 import {useAppDispatch} from "../../app/hooks";
 import {updateGk} from "../crossInfoSlice";
 
-const defaultColumnOptions = {
-    flex: 1,
-    editable: true,
-    sortable: false,
-}
-
 const columns: GridColumns = [
-    {field: "pageNum", headerName: "Месяц", flex: 15, editable: false, sortable: false, headerAlign: "center", align: "center",},
+    {
+        field: "pageNum",
+        headerName: "Месяц",
+        editable: false,
+        sortable: false,
+        headerAlign: "center",
+        align: "center",
+        minWidth: 80,
+    },
 ]
 
 function GkTable(props: { currentGk: Gk[] | undefined }) {
@@ -24,11 +26,13 @@ function GkTable(props: { currentGk: Gk[] | undefined }) {
         if (columns.length !== 1) return
         for (let i = 0; i < 31; i++) {
             columns.push({
-                ...defaultColumnOptions,
+                editable: true,
+                sortable: false,
                 field: i.toString(),
                 headerName: (i + 1).toString(),
                 headerAlign: "center",
                 align: "center",
+                flex: 1,
                 preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                     changeGk(params.row.pageNum - 1, i, Number(params.props.value))
                     return {...params.props}
@@ -46,7 +50,7 @@ function GkTable(props: { currentGk: Gk[] | undefined }) {
     })
 
     return (
-        <div style={{height: "682px", width: "95%", display: "flex", alignItems: "flex-start"}}>
+        <div style={{height: "696px", width: "80%", display: "flex", alignItems: "flex-start"}}>
             {rows && <DataGrid
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 columns={columns}

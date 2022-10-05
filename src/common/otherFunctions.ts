@@ -1,7 +1,4 @@
 import {Defstatis, Pointset, SetTimeUse, State, Use, Useinput} from "./index";
-import {setState} from "../features/crossInfoSlice";
-import produce from "immer";
-
 export const prepareVVTab = (state: State): State => {
     const oldVersion = state.Model.vpcpdr === 3
 
@@ -10,14 +7,14 @@ export const prepareVVTab = (state: State): State => {
     const pointset: Pointset = JSON.parse(JSON.stringify(state.arrays.pointset))
     const useinput: Useinput = JSON.parse(JSON.stringify(state.arrays.useinput))
 
-    if (oldVersion) {
-        const shift1 = SetTimeUse.uses.shift()
-        const shift2 = SetTimeUse.uses.shift()
-        if (shift1 && shift2) {
-            SetTimeUse.uses.push(shift1)
-            SetTimeUse.uses.push(shift2)
-        }
-    }
+    // if (oldVersion) {
+    //     const shift1 = SetTimeUse.uses.shift()
+    //     const shift2 = SetTimeUse.uses.shift()
+    //     if (shift1 && shift2) {
+    //         SetTimeUse.uses.push(shift1)
+    //         SetTimeUse.uses.push(shift2)
+    //     }
+    // }
 
     // defstatis
     defstatis.lvs[0].count = oldVersion ? 0 : SetTimeUse.uses.length
@@ -68,8 +65,17 @@ export const sizeVerification = (state: State | undefined): State => {
     const SetTimeUse: SetTimeUse = JSON.parse(JSON.stringify(state.arrays.SetTimeUse))
     const length = oldVersion ? 8 : 18
 
-    let emptyRecord: Use = {'name': '','type': 0,'tvps': 0,'dk': 0,'fazes': '','long': 0,}
+    let emptyRecord: Use = {'name': '', 'type': 0, 'tvps': 0, 'dk': 0, 'fazes': '', 'long': 0,}
     if (SetTimeUse.uses.length !== length) {
+        if (!oldVersion) {
+            let shift1 = SetTimeUse.uses.pop();
+            let shift2 = SetTimeUse.uses.pop();
+            if (shift1 && shift2) {
+                SetTimeUse.uses.unshift(shift1);
+                SetTimeUse.uses.unshift(shift2);
+            }
+        }
+
         if (SetTimeUse.uses.length < length) {
             while (SetTimeUse.uses.length !== length) {
                 SetTimeUse.uses.push(Object.assign({}, emptyRecord));
@@ -79,26 +85,23 @@ export const sizeVerification = (state: State | undefined): State => {
                 SetTimeUse.uses.pop();
             }
         }
+
         if (oldVersion) {
-            for (let i = 2; i < length; i++) {
-                SetTimeUse.uses[i - 2].name = (i - 1) + ' вх';
+            let shift1 = SetTimeUse.uses.shift();
+            let shift2 = SetTimeUse.uses.shift();
+            if (shift1 && shift2) {
+                SetTimeUse.uses.push(shift1);
+                SetTimeUse.uses.push(shift2);
             }
-            let shift4 = SetTimeUse.uses.pop();
-            let shift3 = SetTimeUse.uses.pop();
-            if (shift4 && shift3) {
-                SetTimeUse.uses.unshift(shift4);
-                SetTimeUse.uses.unshift(shift3);
+            for (let i = 0; i < length - 2; i++) {
+                SetTimeUse.uses[i].name = (i + 1) + ' вх';
             }
         } else {
             for (let i = 2; i < length; i++) {
                 SetTimeUse.uses[i].name = (i - 1) + ' вх';
             }
         }
-        SetTimeUse.uses[0].name = '1 ТВП';
-        SetTimeUse.uses[1].name = '2 ТВП';
     }
-
-
 
     return {...state, arrays: {...state.arrays, SetTimeUse}}
 }

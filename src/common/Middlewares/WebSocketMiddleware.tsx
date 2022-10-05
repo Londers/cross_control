@@ -1,7 +1,17 @@
 import {createAction, createListenerMiddleware, isAnyOf} from "@reduxjs/toolkit";
-import {CrossControlInfoMsg, IncomingWebSocketMessage, OutcomingWebSocketMessage, State} from "../index";
-import {setCrossInfo} from "../../features/crossInfoSlice";
+import {
+    ChaneEditMsg,
+    CheckMsg, CreateMsg,
+    CrossControlInfoMsg, DeleteMsg,
+    EditInfoMsg,
+    IncomingWebSocketMessage,
+    OutcomingWebSocketMessage, SendMsg,
+    State
+} from "../index";
+import {setCrossInfo, setEdit, setState} from "../../features/crossInfoSlice";
 import {setStateSave} from "../../features/stateSaveSlice";
+import {setCheck, setCheckErr, setEditInfo} from "../../features/additionalInfoSlice";
+import {RootState} from "../../app/store";
 
 // import {
 //     ChangeEditMsg,
@@ -29,6 +39,10 @@ let ws: WebSocket
 WebSocketListenerMiddleware.startListening({
     matcher: isAnyOf(wsConnect, wsGetMessage, wsSendMessage),
     effect: async (action, listenerApi) => {
+        const state = listenerApi.getState() as RootState
+        const currentDeviceState = state.crossInfo.state
+        const savedDeviceState = state.stateSave
+
         if (wsConnect.match(action)) {
             ws = new WebSocket(action.payload)
             ws.onopen = () => console.log("opened")
@@ -44,12 +58,68 @@ WebSocketListenerMiddleware.startListening({
                     listenerApi.dispatch(setCrossInfo(crossControlInfo))
                     listenerApi.dispatch(setStateSave(crossControlInfo.state as State))
                     break;
-                // case "crossBuild":
-                //     listenerApi.dispatch(setInitialData(action.payload.data as CrossBuildMsg))
-                //     break;
-                // case "changeEdit":
-                //     listenerApi.dispatch(setEdit(action.payload.data as ChangeEditMsg))
-                //     break;
+                case "checkB":
+                    listenerApi.dispatch(setCheck(action.payload.data as CheckMsg))
+                    listenerApi.dispatch(setCheckErr((action.payload.data as CheckMsg).status))
+                    break;
+                case "editInfoB":
+                    listenerApi.dispatch(setEditInfo(action.payload.data as EditInfoMsg))
+                    break;
+                case "changeEdit":
+                    listenerApi.dispatch(setEdit((action.payload.data as ChaneEditMsg).edit))
+                    break;
+                case "sendB": {
+                    const msg = action.payload.data as SendMsg
+                    if (msg.status && msg.state) {
+                        if (localStorage.getItem("login") !== msg.user) {
+                            if (msg.state.id !== savedDeviceState.id) {
+                                alert("Другой оператор изменил № перекрёстка");
+                                window.location.href = window.location.pathname + window.location.search.replace('ID=' + savedDeviceState.id, 'ID=' + msg.state.id);
+                            } else {
+                                listenerApi.dispatch(setState(msg.state))
+                            }
+                        } else {
+                            if (msg.state.id !== savedDeviceState.id) {
+                                listenerApi.dispatch(wsSendMessage({
+                                    type: 'deleteB',
+                                    state: savedDeviceState
+                                }))
+                            } else {
+                                listenerApi.dispatch(setStateSave(msg.state))
+                            }
+                        }
+                    }
+                    // listenerApi.dispatch(setEdit((action.payload.data as SendMsg)))
+                    break;
+                }
+                case "createB": {
+                    const msg = action.payload.data as CreateMsg
+                    if (!msg.status) {
+                        if (msg.result) {
+                            alert(msg.result)
+                        } else {
+                            alert("Ошибка при создании перекрёстка")
+                        }
+                    } else {
+                        window.location.href = window.location.pathname + window.location.search.replace('ID=' + savedDeviceState.id, 'ID=' + currentDeviceState?.id);
+                    }
+                    // listenerApi.dispatch(setEdit((action.payload.data as CreateMsg)))
+                    break;
+                }
+                case "deleteB": {
+                    const msg = action.payload.data as DeleteMsg
+                    if (msg.status) {
+                        if (currentDeviceState?.id !== savedDeviceState.id) {
+                            window.location.href = window.location.pathname + window.location.search.replace('ID=' + savedDeviceState.id, 'ID=' + currentDeviceState?.id);
+                        } else {
+                            window.close();
+                        }
+                    } else {
+                        alert('Не удалось удалить перекрёсток');
+                    }
+                    // listenerApi.dispatch(setEdit((action.payload.data as DeleteMsg)))
+                    break;
+                }
                 // case "dispatch":
                 //     listenerApi.dispatch(setDispatch(action.payload.data as DispatchMsg))
                 //     break;

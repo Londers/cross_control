@@ -1,13 +1,18 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.sass';
 import {useAppDispatch} from "./hooks";
 import {wsConnect} from "../common/Middlewares/WebSocketMiddleware";
 import ControlButtons from "../features/ControlButtons";
 import TabsPanel from "../features/TabsPanel";
 import {Grid} from "@mui/material";
+import AdditionalButtons from "../features/AdditionalButtons";
 
 function App() {
     const dispatch = useAppDispatch()
+
+    const [showCheck, setShowCheck] = useState(false)
+    const [showEdit, setShowEdit] = useState(false)
+    const [showReference, setShowReference] = useState(false)
 
     useEffect(() => {
         if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
@@ -29,10 +34,13 @@ function App() {
                 height="100vh"
             >
                 <Grid item xs={1}>
-                    <ControlButtons/>
+                    <ControlButtons setShowCheck={setShowCheck} setShowEdit={setShowEdit} setShowReference={setShowReference}/>
                 </Grid>
                 <Grid item xs>
                     <TabsPanel/>
+                </Grid>
+                <Grid item xs={1.2}>
+                    <AdditionalButtons check={showCheck} edit={showEdit} reference={showReference}/>
                 </Grid>
             </Grid>
         </div>

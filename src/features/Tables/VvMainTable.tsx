@@ -1,8 +1,8 @@
-import React, {useEffect} from "react";
+import React from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {SetTimeUse, Use} from "../../common";
-import {useAppDispatch, useAppSelector} from "../../app/hooks";
-import {selectCrossInfo, setDevicePspd, updateTimeUse} from "../crossInfoSlice";
+import {useAppDispatch} from "../../app/hooks";
+import { updateTimeUse} from "../crossInfoSlice";
 
 const defaultColumnOptions = {
     flex: 1,
@@ -15,12 +15,12 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
     const changeTimeUse = (id: number, use: Use) => {
         dispatch(updateTimeUse({id, use}))
     }
-    const state = useAppSelector(selectCrossInfo).state
     const columns: GridColumns = [
         {
             field: "name",
             headerName: "№ Назн.",
-            type: "string", ...defaultColumnOptions,
+            type: "string",
+            ...defaultColumnOptions,
             editable: false,
             headerAlign: "center",
             align: "center",
@@ -101,7 +101,7 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
     // useEffect(() => {dispatch(setDevicePspd(state?.Model.vpcpdl + "." + state?.Model.vpcpdr))})
 
     const rows = props.SetTimeUse?.uses.map((use, index) => {
-        return {id: index, ...use}
+        return {id: index, ...use, type: use.type.toString()}
     })
 
     return (

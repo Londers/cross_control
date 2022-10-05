@@ -9,7 +9,7 @@ import {
     SelectChangeEvent,
     TextField
 } from "@mui/material";
-import React, {ChangeEvent, useState} from "react";
+import React, {ChangeEvent, SyntheticEvent, useEffect, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {selectCrossInfo, setPk} from "../crossInfoSlice";
 import CopyIcon from "../../common/icons/CopyIcon";
@@ -29,6 +29,15 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const crossInfo = useAppSelector(selectCrossInfo)
     const currentPk = crossInfo.state?.arrays.SetDK.dk[props.pk - 1]
 
+    const [tc, setTc] = useState<number>(currentPk?.tc ?? 0)
+    const [shift, setShift] = useState<number>(currentPk?.shift ?? 0)
+    const [red, setRed] = useState(0)
+
+    useEffect(() => {
+        setTc(currentPk?.tc ?? 0)
+        setShift(currentPk?.shift ?? 0)
+    }, [currentPk])
+
     const [selectedRow, setSelectedRow] = useState<number[]>([1])
     const pkFSM = new PkFiniteStateMachine(currentPk, selectedRow[0] === 0 ? 0 : selectedRow[0] - 1)
     // const [pkFSM, setPkFSM] = useState<PkFiniteStateMachine>(new PkFiniteStateMachine(currentPk))
@@ -41,13 +50,22 @@ function PkTab(props: { pk: number, setPk: Function }) {
         if (currentPk) changePk(pkFSM.changeDesc(event.currentTarget.value))
     }
     const handlePkTcChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (currentPk) changePk(pkFSM.changeTc(Number(event.currentTarget.value)))
+        if (currentPk) setTc(Number(event.target?.value))
+        // if (currentPk) changePk(pkFSM.changeTc(Number(event.target?.value)))
+    }
+    const handlePkTcEnter = () => {
+        // if (currentPk) setTc(Number(event.target?.value))
+        if (currentPk) changePk(pkFSM.changeTc(tc))
     }
     const handlePkTwotChange = () => {
         if (currentPk) changePk(pkFSM.changeTwot(!currentPk.twot))
     }
     const handlePkShiftChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (currentPk) changePk(pkFSM.changeShift(Number(event.currentTarget.value)))
+        if (currentPk) setShift(Number(event.currentTarget.value))
+        // if (currentPk) changePk(pkFSM.changeShift(Number(event.currentTarget.value)))
+    }
+    const handlePkShiftEnter = () => {
+        if (currentPk) changePk(pkFSM.changeShift(shift))
     }
     const handlePkTypePuChange = (event: SelectChangeEvent<number>) => {
         if (currentPk) changePk(pkFSM.changeTpu(Number(event.target.value)))
@@ -77,6 +95,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
     }
 
     const handlePkEditionTypeChange = () => {
+        setRed(red === 1 ? 0 : 1)
     }
 
     const changePk = (pk: Pk) => {
@@ -144,10 +163,42 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     label="Время цикла"
                     type="text"
                     style={{width: "150px"}}
-                    value={currentPk?.tc ?? ""}
+                    value={tc ?? ""}
                     disabled={currentPk?.tpu === 1}
                     onChange={handlePkTcChange}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") handlePkTcEnter()
+                    }}
+                    onBlur={handlePkTcEnter}
                 />
+                <FormControl sx={{width: "fit-content", minWidth: "130px"}}>
+                    <InputLabel id="demo-simple-select-label">Специальный ПК</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        // id="demo-simple-select"
+                        value={(currentPk?.tc ?? 0 > 3) ? -1 : currentPk?.tc ?? -1}
+                        label="Специальный ПК"
+                        onChange={(event) => {
+                            const value = Number(event.target?.value)
+                            if (currentPk) {
+                                if (value !== -1) {
+                                    setTc(value)
+                                    changePk(pkFSM.changeTc(value))
+                                } else {
+                                    setTc(60)
+                                    let tempFSM = new PkFiniteStateMachine(pkFSM.changeTc(60), selectedRow[0])
+                                    changePk(tempFSM.createNewPk(60))
+                                }
+                            }
+                        }
+                        }
+                    >
+                        <MenuItem value={-1} key={-1}>Отключён</MenuItem>)
+                        <MenuItem value={0} key={0}>ЛР</MenuItem>)
+                        <MenuItem value={1} key={1}>ЖМ</MenuItem>)
+                        <MenuItem value={2} key={2}>ОС</MenuItem>)
+                    </Select>
+                </FormControl>
                 <FormControlLabel
                     control={<Checkbox
                         checked={currentPk?.twot === true}
@@ -159,9 +210,13 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     label="Сдвиг"
                     type="text"
                     style={{width: "150px"}}
-                    value={currentPk?.shift ?? ""}
+                    value={shift ?? ""}
                     disabled={currentPk?.tpu === 1}
                     onChange={handlePkShiftChange}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") handlePkShiftEnter()
+                    }}
+                    onBlur={handlePkShiftEnter}
                 />
                 <FormControl sx={{width: "fit-content", minWidth: "90px"}}>
                     <InputLabel id="demo-simple-select-label">Тип ПУ</InputLabel>
@@ -215,7 +270,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                         labelId="demo-simple-select-label"
                         // id="demo-simple-select"
                         // value={crossInfo.state?.area ?? 0}
-                        defaultValue={0}
+                        defaultValue={red}
                         label="Редакция"
                         onChange={handlePkEditionTypeChange}
                     >
@@ -225,10 +280,10 @@ function PkTab(props: { pk: number, setPk: Function }) {
                 </FormControl>
             </Grid>
 
-            <Grid item xs style={{width:"100%", marginTop: "1rem"}}>
+            <Grid item xs style={{width: "100%", marginTop: "1rem"}} hidden={(currentPk?.tc ?? -1) < 3}>
                 {currentPk && <PkTable currentPk={currentPk} pkNum={props.pk} currentRow={selectedRow[0]}
                                        setCurrentRow={setSelectedRow}
-                                       pkFSM={pkFSM}/>}
+                                       pkFSM={pkFSM} redaction={red === 0}/>}
             </Grid>
         </Grid>
     )

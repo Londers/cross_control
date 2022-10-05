@@ -247,6 +247,9 @@ export class PkFiniteStateMachine implements Pk {
         return produce(this, draft => {
             if (newTc < 3) {
                 draft.tc = newTc
+                draft.sts = Array.from({length: 12}, (v, i) => {
+                    return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
+                })
                 return
             } else {
                 if (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
@@ -284,7 +287,7 @@ export class PkFiniteStateMachine implements Pk {
                     // if (replaceNums.some(repl => repl === draft.sts[i-1].tf)) {
                     // }
 
-                    if (tvpNums.some(tvp => tvp === draft.sts[i - 1].tf)) {
+                    if (tvpNums.some(tvp => tvp === draft.sts[i - 1]?.tf)) {
                         if (draft.razlen) {
                             for (let j = 0; j < this.tvpWithRepls.length; j++) draft.tvpWithRepls[j].stop += diff
                         }
@@ -362,6 +365,8 @@ export class PkFiniteStateMachine implements Pk {
                     draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - currMinDur)
                 }
             }
+
+            if ((type === 1) || (type === 8)) customNum = 0
 
             draft.sts.splice(draft.pointer.next, 0, {
                     line: 0,
@@ -447,6 +452,7 @@ export class PkFiniteStateMachine implements Pk {
     changeType(type: number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
             draft.sts[draft.pointer.current].tf = type
+            if ((type === 1) || (type === 8)) draft.sts[draft.pointer.current].num = 0
         }).getPk()
     }
 
@@ -582,16 +588,17 @@ export class PkFiniteStateMachine implements Pk {
         }).getPk()
     }
 
-    createNewPk(): Pk {
+    createNewPk(tc?:number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
             const sts = Array.from({length: 12}, (v, i) => {
                 return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
             })
-            sts[0].stop = Math.floor(draft.tc / 2) + draft.tc % 2
+            const cycleTime = tc ?? draft.tc
+            sts[0].stop = Math.floor(cycleTime / 2) + cycleTime % 2
             sts[0].num = 1
             sts[1].start = sts[0].stop
             sts[1].num = 2
-            sts[1].stop = draft.tc
+            sts[1].stop = cycleTime
             draft.sts = sts
         }).getPk()
     }

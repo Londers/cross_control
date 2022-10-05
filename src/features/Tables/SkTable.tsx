@@ -1,7 +1,7 @@
 import React from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, GridSelectionModel, ruRU} from "@mui/x-data-grid";
 import {Line, Sk} from "../../common";
-import CustomTimePicker from "../Custom/CustomTimePicker";
+import CustomTimePicker from "../Other/CustomTimePicker";
 import {useAppDispatch} from "../../app/hooks";
 import {updateSkLine} from "../crossInfoSlice";
 

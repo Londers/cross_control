@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from "react";
+import React, {ChangeEvent, useState} from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {Pk, St} from "../../common";
 import {Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent} from "@mui/material";
@@ -12,11 +12,14 @@ const defaultColumnOptions = {
     editable: true,
 }
 
-function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setCurrentRow: Function, pkFSM: PkFiniteStateMachine }) {
+function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setCurrentRow: Function, pkFSM: PkFiniteStateMachine, redaction: boolean }) {
     const dispatch = useAppDispatch()
     const changePk = (pk: Pk) => {
         if (props.currentPk) dispatch(setPk({num: props.pkNum - 1, pk}))
     }
+
+    const [lastDur, setLastDur] = useState(0)
+    const [lastStart, setLastStart] = useState(0)
 
     const calcDurationDiff = (newDuration: number) => {
         return newDuration - (props.currentPk.sts[props.currentRow - 1].stop - props.currentPk.sts[props.currentRow - 1].start + props.currentPk.sts[props.currentRow - 1].dt)
@@ -37,8 +40,10 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             align: "center",
             headerAlign: "center",
             ...defaultColumnOptions,
+            editable: !props.redaction,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-                if (props.currentPk) changePk(props.pkFSM.changeStart(Number(params.props.value)))
+                // if (props.currentPk) changePk(props.pkFSM.changeStart(Number(params.props.value)))
+                setLastStart(Number(params.props.value))
                 return {...params.props};
             },
         },
@@ -91,6 +96,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                     onFocus={() => {
                         if (props.currentRow !== Number(params.id)) props.setCurrentRow([Number(params.id)])
                     }}
+                    disabled={params.id === 1}
                 >
                     <MenuItem value={0} key={0}>---</MenuItem>)
                     <MenuItem value={1} key={1}>МГР</MenuItem>)
@@ -112,7 +118,9 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerAlign: "center",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-                if (props.currentPk) changePk(props.pkFSM.changePhaseNum(Number(params.props.value)))
+                if (props.currentPk && (params.id !== 1)) {
+                    if ((params.row.tf !== 1) && (params.row.tf !== 8)) changePk(props.pkFSM.changePhaseNum(Number(params.props.value)))
+                }
                 return {...params.props};
             },
         },
@@ -121,22 +129,25 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerName: "Длительность",
             align: "center",
             headerAlign: "center",
+            minWidth: 130,
             ...defaultColumnOptions,
+            editable: props.redaction,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-                if (props.currentPk) {
-                    if (props.currentPk.tpu === 0) {
-                        changePk(props.pkFSM.changeDuration(calcDurationDiff(Number(params.props.value))))
-                    } else {
-                        changePk(props.pkFSM.changeTc(props.currentPk.tc + calcDurationDiff(Number(params.props.value))))
-                    }
-                }
+                // if (props.currentPk) {
+                //     if (props.currentPk.tpu === 0) {
+                //         changePk(props.pkFSM.changeDuration(calcDurationDiff(Number(params.props.value))))
+                //     } else {
+                //         changePk(props.pkFSM.changeTc(props.currentPk.tc + calcDurationDiff(Number(params.props.value))))
+                //     }
+                // }
+                setLastDur(Number(params.props.value))
                 return {...params.props};
             },
-            valueFormatter: (params) => {
-                // todo: uncomment on pk complete
-                // if ((Number(params.value) < minPhaseDuration) && (props.currentPk.sts[Number(params.id) - 1].start !== props.currentPk.sts[Number(params.id) - 1].stop)) return minPhaseDuration
-                return Number(params.value)
-            }
+            // valueFormatter: (params) => {
+            //     // todo: uncomment on pk complete
+            //     // if ((Number(params.value) < minPhaseDuration) && (props.currentPk.sts[Number(params.id) - 1].start !== props.currentPk.sts[Number(params.id) - 1].stop)) return minPhaseDuration
+            //     return Number(params.value)
+            // }
         },
         {
             field: "plus",
@@ -145,10 +156,11 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerAlign: "center",
             ...defaultColumnOptions,
             editable: false,
-            renderCell: (params =>
-                    <FormControlLabel
+            renderCell: (params => {
+                    return (<FormControlLabel
                         control={
                             <Checkbox
+                                disabled={!(props.currentPk.razlen && tvpNums.some(tvp => tvp === params.row.tf))}
                                 checked={params.value}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                     if (props.currentPk) changePk(props.pkFSM.changePlus(e.target.checked))
@@ -159,7 +171,8 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                             />
                         }
                         label=""
-                    />
+                    />)
+                }
             ),
 
         },
@@ -194,6 +207,26 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
                 selectionModel={props.currentRow}
                 onCellEditStart={(params) => {
                     if (props.currentRow !== Number(params.id)) props.setCurrentRow([Number(params.id)])
+                    if (params.field === "duration") {
+                        setLastDur(params.value)
+                    }
+                    if (params.field === "start") {
+                        setLastStart(params.value)
+                    }
+                }}
+                onCellEditStop={(params) => {
+                    if (params.field === "duration") {
+                        if (props.currentPk && (params.value !== lastDur)) {
+                            if (props.currentPk.tpu === 0) {
+                                changePk(props.pkFSM.changeDuration(calcDurationDiff(lastDur)))
+                            } else {
+                                changePk(props.pkFSM.changeTc(props.currentPk.tc + calcDurationDiff(lastDur)))
+                            }
+                        }
+                    }
+                    if (params.field === "start" && (params.value !== lastStart)) {
+                        changePk(props.pkFSM.changeStart(lastStart))
+                    }
                 }}
             />}
         </div>

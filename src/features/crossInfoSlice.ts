@@ -22,6 +22,10 @@ export const crossInfoSlice = createSlice({
         setState: (state, action: PayloadAction<State>) => {
             state.state = action.payload
         },
+        setEdit: (state, action: PayloadAction<boolean>) => {
+            if (state.state) state.edit = action.payload
+        },
+
         // main tab
         setDeviceType: (state, action: PayloadAction<number>) => {
             if (state.state) {
@@ -42,6 +46,12 @@ export const crossInfoSlice = createSlice({
                         break;
                 }
             }
+        },
+        setScale: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.scale = action.payload
+        },
+        setDgis: (state, action: PayloadAction<number[]>) => {
+            if (state.state) state.state.dgis = action.payload.join(",")
         },
         setDeviceId: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.id = action.payload
@@ -157,7 +167,7 @@ export const crossInfoSlice = createSlice({
         },
 
         // kv tab
-        setKv: (state, action: PayloadAction<{kv: Stage[]}>) => {
+        setKv: (state, action: PayloadAction<{ kv: Stage[] }>) => {
             if (state.state) state.state.arrays.SetCtrl.Stage = action.payload.kv
         },
         updateKvTime: (state, action: PayloadAction<{ id: number, value: CustomTimestamp }>) => {
@@ -178,7 +188,11 @@ export const crossInfoSlice = createSlice({
 export const {
     setCrossInfo,
     setState,
+    setEdit,
+
     setDeviceType,
+    setScale,
+    setDgis,
     setDeviceId,
     setDeviceIdevice,
     setDeviceArea,

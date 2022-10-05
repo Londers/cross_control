@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from "react";
+import React, {ChangeEvent, useState} from "react";
 import {
     Button,
     Checkbox,
@@ -29,14 +29,11 @@ import {
     setDevicePspd,
     setDeviceSubarea,
     setDeviceType,
-    setDeviceTz, setState,
+    setDeviceTz,
 } from "../crossInfoSlice";
 import SetupDKTable from "../Tables/SetupDKTable";
 import {reloadMainTab} from "../../common/Middlewares/TabReloadMiddleware";
-import {sizeVerification} from "../../common/otherFunctions";
-import {State} from "../../common";
-
-// import {selectStateSave} from "../stateSaveSlice";
+import CoordinatesDialog from "../Other/CoordinatesDialog";
 
 function MainTab() {
     const width = 40
@@ -86,10 +83,9 @@ function MainTab() {
     }
 
     const handlePspdChange = (event: SelectChangeEvent<string>) => {
-        // dispatch(setDevicePspd(event.target.value))
-        const [, vpcpdr] = event.target.value.split(".").map(v => Number(v))
-        if (crossInfo.state) dispatch(setState(sizeVerification({...crossInfo.state, Model: {...crossInfo.state.Model, vpcpdr}})))
-
+        dispatch(setDevicePspd(event.target.value))
+        // const [, vpcpdr] = event.target.value.split(".").map(v => Number(v))
+        // if (crossInfo.state) dispatch(setState(sizeVerification({...crossInfo.state, Model: {...crossInfo.state.Model, vpcpdr}})))
     }
 
     const handlePbslChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -178,7 +174,8 @@ function MainTab() {
                 />
             </Grid>
             <Grid item xs style={{marginTop: "1rem"}}>
-                <Button variant="outlined" onClick={() => alert("in work")}>Выберите координаты</Button>
+                <CoordinatesDialog/>
+                {/*<Button variant="outlined" onClick={handleCoordinatesClick}>Выберите координаты</Button>*/}
             </Grid>
             <Grid item xs style={{marginTop: "1rem"}}>
                 <TextField
@@ -294,6 +291,7 @@ function MainTab() {
                 {/*    crossInfo.state?.arrays.SetupDK && <SetupDKTable setup={crossInfo.state?.arrays.SetupDK}/>*/}
                 {/*}*/}
             </Grid>
+            {/*{showCoordsDialog && <CoordinatesDialog/>}*/}
         </Grid>
     )
 }
