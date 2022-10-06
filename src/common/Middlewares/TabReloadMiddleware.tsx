@@ -2,7 +2,6 @@ import {createAction, createListenerMiddleware, isAnyOf} from "@reduxjs/toolkit"
 import {RootState} from "../../app/store";
 import {setDevicePspd, setState} from "../../features/crossInfoSlice";
 import produce from "immer";
-import {Defstatis, Pointset, SetTimeUse, Use, Useinput} from "../index";
 
 export const reloadMainTab = createAction("reload/mainTab")
 export const reloadPkTab = createAction("reload/PkTab")

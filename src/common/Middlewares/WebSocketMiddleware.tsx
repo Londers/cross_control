@@ -5,10 +5,10 @@ import {
     CrossControlInfoMsg, DeleteMsg,
     EditInfoMsg,
     IncomingWebSocketMessage,
-    OutcomingWebSocketMessage, SendMsg,
+    OutcomingWebSocketMessage, SendHistoryMsg, SendMsg,
     State
 } from "../index";
-import {setCrossInfo, setEdit, setState} from "../../features/crossInfoSlice";
+import CrossInfoSlice, {setCrossInfo, setEdit, setState} from "../../features/crossInfoSlice";
 import {setStateSave} from "../../features/stateSaveSlice";
 import {setCheck, setCheckErr, setEditInfo} from "../../features/additionalInfoSlice";
 import {RootState} from "../../app/store";
@@ -118,6 +118,17 @@ WebSocketListenerMiddleware.startListening({
                         alert('Не удалось удалить перекрёсток');
                     }
                     // listenerApi.dispatch(setEdit((action.payload.data as DeleteMsg)))
+                    break;
+                }
+                case "sendHistory": {
+                    const msg = action.payload.data as SendHistoryMsg
+
+                    let newCrossInfo = JSON.parse(JSON.stringify(state.crossInfo))
+                    newCrossInfo.state = msg.sendHistory
+                    localStorage.setItem('history', JSON.stringify(newCrossInfo))
+                    localStorage.setItem('historydiff', JSON.stringify(msg.diff))
+                    localStorage.setItem('historyts', JSON.stringify(state.additionalInfo.history))
+                    window.open(window.location.href);
                     break;
                 }
                 // case "dispatch":

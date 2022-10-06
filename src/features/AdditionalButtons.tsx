@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button} from "@mui/material";
 import {useAppSelector} from "../app/hooks";
 import {selectCheck, selectEdit} from "./additionalInfoSlice";
@@ -14,6 +14,16 @@ function AdditionalButtons(props: { check: boolean, edit: boolean, reference: bo
 
     const checkInfo = useAppSelector(selectCheck)
     const editInfo = useAppSelector(selectEdit)
+
+    useEffect(() => {
+        setShowCheck()
+    }, [checkInfo])
+    useEffect(() => {
+        setShowEdit()
+    }, [editInfo])
+    useEffect(() => {
+        setShowReference()
+    }, [])
 
     const setShowCheck = () => {
         setShowCheckInfo(!showCheckInfo)
@@ -33,29 +43,34 @@ function AdditionalButtons(props: { check: boolean, edit: boolean, reference: bo
         setShowReferenceInfo(!showReferenceInfo)
     }
 
-
     return (
         <div className="buttonGroup" style={{marginTop: "3rem"}}>
             {props.check &&
-                <Button variant="outlined" onClick={setShowCheck}>
-                    Результат проверки
-                </Button>
+                (<>
+                    <Button variant="outlined" onClick={setShowCheck}>
+                        Результат проверки
+                    </Button>
+                    {showCheckInfo && <CheckInfo checkInfo={checkInfo}/>}
+                </>)
             }
-            {showCheckInfo && <CheckInfo checkInfo={checkInfo}/>}
 
             {props.edit &&
-                <Button variant="outlined" onClick={setShowEdit}>
-                    Список пользователей на странице
-                </Button>
+                (<>
+                    <Button variant="outlined" onClick={setShowEdit}>
+                        Список пользователей на странице
+                    </Button>
+                    {showEditInfo && <EditInfo editInfo={editInfo}/>}
+                </>)
             }
-            {showEditInfo && <EditInfo editInfo={editInfo}/>}
 
             {props.reference &&
-                <Button variant="outlined" onClick={setShowReference}>
-                    Справка по странице
-                </Button>
+                (<>
+                    <Button variant="outlined" onClick={setShowReference}>
+                        Справка по странице
+                    </Button>
+                    {props.reference && showReferenceInfo && <ReferenceInfo/>}
+                </>)
             }
-            {showReferenceInfo && <ReferenceInfo/>}
         </div>
     )
 }

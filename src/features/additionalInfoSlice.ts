@@ -6,12 +6,14 @@ const initialState: {
     check: CheckMsg,
     edit: EditInfoMsg,
     zoom: number,
-    checkErr: boolean
+    checkErr: boolean,
+    history: Date,
 } = {
     check: {result: [], status: false},
     edit: {users: []},
     zoom: -1,
-    checkErr: true
+    checkErr: true,
+    history: new Date(),
 }
 
 export const additionalInfoSlice = createSlice({
@@ -30,10 +32,13 @@ export const additionalInfoSlice = createSlice({
         setCheckErr: (state, action: PayloadAction<boolean>) => {
             state.checkErr = !action.payload
         },
+        setHistory: (state, action: PayloadAction<Date>) => {
+            state.history = action.payload
+        },
     }
 })
 
-export const {setCheck, setEditInfo, setZoom, setCheckErr} = additionalInfoSlice.actions
+export const {setCheck, setEditInfo, setZoom, setCheckErr, setHistory} = additionalInfoSlice.actions
 
 export const selectCheck = (state: RootState) => state.additionalInfo.check
 export const selectEdit = (state: RootState) => state.additionalInfo.edit

@@ -3,7 +3,15 @@ export interface IncomingWebSocketMessage {
     data: IncomingDataType;
 }
 
-export type IncomingDataType = CrossControlInfoMsg | CheckMsg | SendMsg | CreateMsg | EditInfoMsg | ChaneEditMsg | DeleteMsg
+export type IncomingDataType =
+    CrossControlInfoMsg
+    | CheckMsg
+    | SendMsg
+    | CreateMsg
+    | EditInfoMsg
+    | ChaneEditMsg
+    | DeleteMsg
+    | SendHistoryMsg
 
 export type OutcomingWebSocketMessage = OutcomingDataType
 
@@ -15,6 +23,7 @@ export type OutcomingDataType =
     | SendEditInfoMsg
     | SendDispatch
     | SendDeleteMsg
+    | GetHistoryMsg
 
 // incoming
 export interface CrossControlInfoMsg {
@@ -24,28 +33,39 @@ export interface CrossControlInfoMsg {
     history: History[];
     state: State | undefined;
 }
+
 export interface CheckMsg {
     result: string[];
     status: boolean;
 }
+
 export interface SendMsg {
     state?: State;
     status: boolean;
     user?: string;
 }
+
 export interface CreateMsg {
     message?: string
     status?: boolean
     result?: string
 }
+
 export interface EditInfoMsg {
     users: { user: string, edit: boolean }[];
 }
+
 export interface ChaneEditMsg {
     edit: boolean
 }
+
 export interface DeleteMsg {
     status: boolean;
+}
+
+export interface SendHistoryMsg {
+    diff: string[];
+    sendHistory: State;
 }
 
 // outcoming
@@ -82,8 +102,15 @@ export interface SendDispatch {
 }
 
 export interface SendDeleteMsg {
-    type: string
+    type: string;
     state: State;
+}
+
+export interface GetHistoryMsg {
+    type: string;
+    data: {
+        time: Date
+    }
 }
 
 export interface State {

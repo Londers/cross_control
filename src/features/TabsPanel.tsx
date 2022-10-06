@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Tab, Tabs, Typography} from "@mui/material";
+import {Box, Button, Tab, Tabs, Typography} from "@mui/material";
 import MainTab from "./Tabs/MainTab";
 import PkTab from "./Tabs/PkTab";
 import SkTab from "./Tabs/SkTab";
@@ -7,6 +7,7 @@ import NkTab from "./Tabs/NkTab";
 import GkTab from "./Tabs/GkTab";
 import VvTab from "./Tabs/VvTab";
 import KvTab from "./Tabs/KvTab";
+import HistorySelect from "./Other/HistorySelect";
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -61,6 +62,7 @@ function TabsPanel() {
                     <Tab label="Карта года" {...allyProps(4)} />
                     <Tab label="Внешние входы" {...allyProps(5)} />
                     <Tab label="Контроль входов" {...allyProps(6)} />
+                    <HistorySelect/>
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>

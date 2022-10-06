@@ -238,5 +238,6 @@ export const {
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo
 export const selectSetupDk = (state: RootState) => state.crossInfo.state?.arrays.SetupDK ?? {} as SetupDK
+export const selectHistory = (state: RootState) => state.crossInfo.history
 
 export default crossInfoSlice.reducer
