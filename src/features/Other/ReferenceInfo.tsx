@@ -6,14 +6,14 @@ function ReferenceInfo() {
     const [data, setData] = useState<any>()
 
     useEffect(() => {
-        // axios.get(window.location.origin + '/file/static/markdown/crossControl.md')
-        //     .then(res => {
-        //         setData(res.data)
-        //     })
-        axios.get('/crossControl.md')
+        axios.get(window.location.origin + '/file/static/markdown/crossControl.md')
             .then(res => {
                 setData(res.data)
             })
+        // axios.get('/crossControl.md')
+        //     .then(res => {
+        //         setData(res.data)
+        //     })
     })
 
     return (

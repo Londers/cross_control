@@ -17,6 +17,11 @@ export const crossInfoSlice = createSlice({
     initialState,
     reducers: {
         setCrossInfo: (state, action: PayloadAction<CrossControlInfoMsg>) => {
+            if (action.payload.state) {
+                if (action.payload.state.arrays.defstatis.lvs[0].period === 0) {
+                    action.payload.state.arrays.defstatis.lvs[0].period = 5
+                }
+            }
             Object.assign(state, {...action.payload, state: {...sizeVerification(action.payload.state)}})
         },
         setState: (state, action: PayloadAction<State>) => {
