@@ -6,14 +6,17 @@ function ReferenceInfo() {
     const [data, setData] = useState<any>()
 
     useEffect(() => {
-        // axios.get(window.location.origin + '/file/static/markdown/crossControl.md')
-        //     .then(res => {
-        //         setData(res.data)
-        //     })
-        axios.get('/crossControl.md')
-            .then(res => {
-                setData(res.data)
-            })
+        if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+            axios.get('/crossControl.md')
+                .then(res => {
+                    setData(res.data)
+                })
+        } else {
+            axios.get(window.location.origin + '/file/static/markdown/crossControl.md')
+                .then(res => {
+                    setData(res.data)
+                })
+        }
     })
 
     return (
