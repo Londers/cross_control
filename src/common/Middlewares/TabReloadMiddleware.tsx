@@ -4,7 +4,7 @@ import {setDevicePspd, setState} from "../../features/crossInfoSlice";
 import produce from "immer";
 
 export const reloadMainTab = createAction("reload/mainTab")
-export const reloadPkTab = createAction("reload/PkTab")
+// export const reloadPkTab = createAction("reload/PkTab")
 export const reloadPk = createAction<number>("reload/Pk")
 export const reloadSkTab = createAction("reload/SkTab")
 export const reloadNkTab = createAction("reload/NkTab")
@@ -16,7 +16,7 @@ export const reloadKvTab = createAction("reload/KvTab")
 export const TabReloadMiddleware = createListenerMiddleware()
 
 TabReloadMiddleware.startListening({
-    matcher: isAnyOf(reloadMainTab, reloadPkTab, reloadPk, reloadSkTab, reloadNkTab, reloadGkTab, reloadKvTab,  setDevicePspd),
+    matcher: isAnyOf(reloadMainTab, reloadPk, reloadSkTab, reloadNkTab, reloadGkTab, reloadKvTab,  setDevicePspd),
     effect: async (action, listenerApi) => {
         const state = listenerApi.getState() as RootState
         const currentDeviceState = state.crossInfo.state
@@ -45,12 +45,7 @@ TabReloadMiddleware.startListening({
             listenerApi.dispatch(setState(
                 produce(currentDeviceState, draft => {
                     draft.arrays.SetDK.dk[action.payload] = savedDeviceState.arrays.SetDK.dk[action.payload]
-                })
-            ))
-        } else if (reloadPkTab.match(action)) {
-            listenerApi.dispatch(setState(
-                produce(currentDeviceState, draft => {
-                    draft.arrays.SetDK = savedDeviceState.arrays.SetDK
+                    draft.arrays.mgrs = savedDeviceState.arrays.mgrs
                 })
             ))
         } else if (reloadSkTab.match(action)) {

@@ -10,7 +10,6 @@ const defaultColumnOptions = {
     sortable: false,
 }
 
-
 function NkTable(props: { currentNk: Nk[] | undefined }) {
     const dispatch = useAppDispatch()
     const changeNk = (nk: number, day: number, value: number) => {

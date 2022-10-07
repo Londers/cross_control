@@ -1,4 +1,4 @@
-import {CrossControlInfoMsg, CustomTimestamp, Gk, Line, Nk, Pk, SetupDK, Sk, Stage, State, Use} from "../common";
+import {CrossControlInfoMsg, CustomTimestamp, Gk, Line, Mgr, Nk, Pk, SetupDK, Sk, Stage, State, Use} from "../common";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "../app/store";
 import {sizeVerification} from "../common/otherFunctions";
@@ -113,6 +113,9 @@ export const crossInfoSlice = createSlice({
         setPeriod: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
         },
+        setMgr: (state, action: PayloadAction<{index: number, mgr: Mgr}>) => {
+            if (state.state) state.state.arrays.mgrs[action.payload.index] = action.payload.mgr
+        },
 
         // sk tab
         updateSk: (state, action: PayloadAction<{ skNum: number, sk: Sk }>) => {
@@ -216,6 +219,7 @@ export const {
     setPk,
     setIte,
     setPeriod,
+    setMgr,
 
     updateSk,
     updateSkLine,
@@ -238,6 +242,7 @@ export const {
 
 export const selectCrossInfo = (state: RootState) => state.crossInfo
 export const selectSetupDk = (state: RootState) => state.crossInfo.state?.arrays.SetupDK ?? {} as SetupDK
+export const selectMgr = (state: RootState) => state.crossInfo.state?.arrays.mgrs
 export const selectHistory = (state: RootState) => state.crossInfo.history
 
 export default crossInfoSlice.reducer

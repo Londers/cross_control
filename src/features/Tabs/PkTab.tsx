@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import React, {ChangeEvent, SyntheticEvent, useEffect, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
-import {selectCrossInfo, setPk} from "../crossInfoSlice";
+import {selectCrossInfo, selectMgr, setPk} from "../crossInfoSlice";
 import CopyIcon from "../../common/icons/CopyIcon";
 import InsertIcon from "../../common/icons/InsertIcon";
 import ReloadIcon from "../../common/icons/ReloadIcon";
@@ -20,6 +20,7 @@ import PkTable from "../Tables/PkTable";
 import {Pk} from "../../common";
 import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
 import {reloadPk} from "../../common/Middlewares/TabReloadMiddleware";
+import MgrTable from "../Tables/MgrTable";
 
 function PkTab(props: { pk: number, setPk: Function }) {
     const width = 40
@@ -28,6 +29,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
 
     const crossInfo = useAppSelector(selectCrossInfo)
     const currentPk = crossInfo.state?.arrays.SetDK.dk[props.pk - 1]
+    const mgrs = useAppSelector(selectMgr)
 
     const [tc, setTc] = useState<number>(currentPk?.tc ?? 0)
     const [shift, setShift] = useState<number>(currentPk?.shift ?? 0)
@@ -280,10 +282,12 @@ function PkTab(props: { pk: number, setPk: Function }) {
                 </FormControl>
             </Grid>
 
-            <Grid item xs style={{width: "100%", marginTop: "1rem"}} hidden={(currentPk?.tc ?? -1) < 3}>
+            <Grid item xs style={{width: "100%", marginTop: "1rem", display: "inline-flex"}}
+                  hidden={(currentPk?.tc ?? -1) < 3}>
                 {currentPk && <PkTable currentPk={currentPk} pkNum={props.pk} currentRow={selectedRow[0]}
                                        setCurrentRow={setSelectedRow}
                                        pkFSM={pkFSM} redaction={red === 0}/>}
+                <MgrTable mgrs={mgrs}/>
             </Grid>
         </Grid>
     )
