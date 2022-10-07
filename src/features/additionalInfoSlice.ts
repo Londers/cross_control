@@ -7,13 +7,13 @@ const initialState: {
     edit: EditInfoMsg,
     zoom: number,
     checkErr: boolean,
-    history: Date,
+    history: Date | undefined,
 } = {
     check: {result: [], status: false},
     edit: {users: []},
     zoom: -1,
     checkErr: true,
-    history: new Date(),
+    history: undefined,
 }
 
 export const additionalInfoSlice = createSlice({

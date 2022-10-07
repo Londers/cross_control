@@ -31,8 +31,8 @@ import {RootState} from "../../app/store";
 // import {addDK} from "../../features/phaseTableSlice";
 
 export const wsConnect = createAction<string>("websocket/connect")
-export const wsGetMessage = createAction<IncomingWebSocketMessage>('websocket/message')
-export const wsSendMessage = createAction<OutcomingWebSocketMessage>('websocket/send')
+export const wsGetMessage = createAction<IncomingWebSocketMessage>("websocket/message")
+export const wsSendMessage = createAction<OutcomingWebSocketMessage>("websocket/send")
 export const WebSocketListenerMiddleware = createListenerMiddleware()
 let ws: WebSocket
 
@@ -57,6 +57,7 @@ WebSocketListenerMiddleware.startListening({
                     const crossControlInfo: CrossControlInfoMsg = action.payload.data as CrossControlInfoMsg
                     listenerApi.dispatch(setCrossInfo(crossControlInfo))
                     listenerApi.dispatch(setStateSave(crossControlInfo.state as State))
+                    document.title = "АРМ ДК-" + crossControlInfo.state?.area + '-' + crossControlInfo.state?.id;
                     break;
                 case "checkB":
                     listenerApi.dispatch(setCheck(action.payload.data as CheckMsg))
@@ -74,14 +75,14 @@ WebSocketListenerMiddleware.startListening({
                         if (localStorage.getItem("login") !== msg.user) {
                             if (msg.state.id !== savedDeviceState.id) {
                                 alert("Другой оператор изменил № перекрёстка");
-                                window.location.href = window.location.pathname + window.location.search.replace('ID=' + savedDeviceState.id, 'ID=' + msg.state.id);
+                                window.location.href = window.location.pathname + window.location.search.replace("ID=" + savedDeviceState.id, "ID=" + msg.state.id);
                             } else {
                                 listenerApi.dispatch(setState(msg.state))
                             }
                         } else {
                             if (msg.state.id !== savedDeviceState.id) {
                                 listenerApi.dispatch(wsSendMessage({
-                                    type: 'deleteB',
+                                    type: "deleteB",
                                     state: savedDeviceState
                                 }))
                             } else {
@@ -101,7 +102,7 @@ WebSocketListenerMiddleware.startListening({
                             alert("Ошибка при создании перекрёстка")
                         }
                     } else {
-                        window.location.href = window.location.pathname + window.location.search.replace('ID=' + savedDeviceState.id, 'ID=' + currentDeviceState?.id);
+                        window.location.href = window.location.pathname + window.location.search.replace("ID=" + savedDeviceState.id, "ID=" + currentDeviceState?.id);
                     }
                     // listenerApi.dispatch(setEdit((action.payload.data as CreateMsg)))
                     break;
@@ -110,12 +111,12 @@ WebSocketListenerMiddleware.startListening({
                     const msg = action.payload.data as DeleteMsg
                     if (msg.status) {
                         if (currentDeviceState?.id !== savedDeviceState.id) {
-                            window.location.href = window.location.pathname + window.location.search.replace('ID=' + savedDeviceState.id, 'ID=' + currentDeviceState?.id);
+                            window.location.href = window.location.pathname + window.location.search.replace("ID=" + savedDeviceState.id, "ID=" + currentDeviceState?.id);
                         } else {
                             window.close();
                         }
                     } else {
-                        alert('Не удалось удалить перекрёсток');
+                        alert("Не удалось удалить перекрёсток");
                     }
                     // listenerApi.dispatch(setEdit((action.payload.data as DeleteMsg)))
                     break;
@@ -125,9 +126,9 @@ WebSocketListenerMiddleware.startListening({
 
                     let newCrossInfo = JSON.parse(JSON.stringify(state.crossInfo))
                     newCrossInfo.state = msg.sendHistory
-                    localStorage.setItem('history', JSON.stringify(newCrossInfo))
-                    localStorage.setItem('historydiff', JSON.stringify(msg.diff))
-                    localStorage.setItem('historyts', JSON.stringify(state.additionalInfo.history))
+                    localStorage.setItem("history", JSON.stringify(newCrossInfo))
+                    localStorage.setItem("historydiff", JSON.stringify(msg.diff))
+                    localStorage.setItem("historyts", JSON.stringify(state.additionalInfo.history))
                     window.open(window.location.href);
                     break;
                 }
