@@ -17,16 +17,6 @@ function AdditionalButtons(props: { check: boolean, edit: boolean, reference: bo
     const checkInfo = useAppSelector(selectCheck)
     const editInfo = useAppSelector(selectEdit)
 
-    useEffect(() => {
-        setShowCheck()
-    }, [checkInfo])
-    useEffect(() => {
-        setShowEdit()
-    }, [editInfo])
-    useEffect(() => {
-        setShowReference()
-    }, [])
-
     const setShowCheck = () => {
         setShowCheckInfo(!showCheckInfo)
         setShowEditInfo(false)
@@ -47,6 +37,17 @@ function AdditionalButtons(props: { check: boolean, edit: boolean, reference: bo
     const setShowHistory = () => {
         setShowHistoryInfo(!showHistoryInfo)
     }
+    
+    useEffect(() => {
+        setShowCheck()
+    }, [checkInfo])
+    useEffect(() => {
+        setShowEdit()
+    }, [editInfo])
+    useEffect(() => {
+        setShowReference()
+    }, [])
+
 
     return (
         <div className="buttonGroup" style={{marginTop: "3rem"}}>

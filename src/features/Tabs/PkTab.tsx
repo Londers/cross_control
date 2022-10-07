@@ -9,7 +9,7 @@ import {
     SelectChangeEvent,
     TextField
 } from "@mui/material";
-import React, {ChangeEvent, SyntheticEvent, useEffect, useState} from "react";
+import React, {ChangeEvent, useEffect, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {selectCrossInfo, selectMgr, setPk} from "../crossInfoSlice";
 import CopyIcon from "../../common/icons/CopyIcon";
@@ -17,10 +17,10 @@ import InsertIcon from "../../common/icons/InsertIcon";
 import ReloadIcon from "../../common/icons/ReloadIcon";
 import CreateIcon from "../../common/icons/CreateIcon";
 import PkTable from "../Tables/PkTable";
+import MgrTable from "../Tables/MgrTable";
 import {Pk} from "../../common";
 import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
 import {reloadPk} from "../../common/Middlewares/TabReloadMiddleware";
-import MgrTable from "../Tables/MgrTable";
 
 function PkTab(props: { pk: number, setPk: Function }) {
     const width = 40
@@ -33,7 +33,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
 
     const [tc, setTc] = useState<number>(currentPk?.tc ?? 0)
     const [shift, setShift] = useState<number>(currentPk?.shift ?? 0)
-    const [red, setRed] = useState(0)
+    const [redaction, setRedaction] = useState(0)
 
     useEffect(() => {
         setTc(currentPk?.tc ?? 0)
@@ -97,7 +97,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
     }
 
     const handlePkEditionTypeChange = () => {
-        setRed(red === 1 ? 0 : 1)
+        setRedaction(redaction === 1 ? 0 : 1)
     }
 
     const changePk = (pk: Pk) => {
@@ -272,7 +272,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                         labelId="demo-simple-select-label"
                         // id="demo-simple-select"
                         // value={crossInfo.state?.area ?? 0}
-                        defaultValue={red}
+                        defaultValue={redaction}
                         label="Редакция"
                         onChange={handlePkEditionTypeChange}
                     >
@@ -286,7 +286,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                   hidden={(currentPk?.tc ?? -1) < 3}>
                 {currentPk && <PkTable currentPk={currentPk} pkNum={props.pk} currentRow={selectedRow[0]}
                                        setCurrentRow={setSelectedRow}
-                                       pkFSM={pkFSM} redaction={red === 0}/>}
+                                       pkFSM={pkFSM} redaction={redaction === 0}/>}
                 <MgrTable mgrs={mgrs}/>
             </Grid>
         </Grid>

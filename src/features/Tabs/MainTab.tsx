@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState} from "react";
+import React, {ChangeEvent} from "react";
 import {
     Button,
     Checkbox,
@@ -181,7 +181,7 @@ function MainTab() {
                 <TextField
                     label="Место размещения"
                     fullWidth
-                    style={{width: "500px"}}
+                    style={{width: "700px"}}
                     value={crossInfo.state?.name ?? -1}
                     onChange={handleNameChange}
                 />
@@ -191,7 +191,7 @@ function MainTab() {
                     label="№ телефона"
                     // inputProps={{pattern: "^([0-9]{1,4}\\-){3}[0-9]{1,3}$"}}
                     // type="number"
-                    style={{width: "250px"}}
+                    style={{width: "150px"}}
                     value={crossInfo.state?.phone.trim() ?? -1}
                     onChange={handlePhoneChange}
                 />
@@ -203,7 +203,7 @@ function MainTab() {
                 <TextField
                     label="Часовой пояс"
                     type="number"
-                    style={{width: "250px"}}
+                    style={{width: "110px"}}
                     value={crossInfo.state?.arrays.timedev.tz ?? -1}
                     onChange={handleTzChange}
                 />
@@ -217,7 +217,7 @@ function MainTab() {
                 <TextField
                     label="Ожидание ответа"
                     type="number"
-                    style={{width: "250px"}}
+                    style={{width: "200px"}}
                 />
             </Grid>
             <Grid item xs style={{marginTop: "1rem", width: "30rem", display: "flex", justifyContent: "space-between"}}>

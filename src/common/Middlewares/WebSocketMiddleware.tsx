@@ -8,7 +8,7 @@ import {
     OutcomingWebSocketMessage, SendHistoryMsg, SendMsg,
     State
 } from "../index";
-import CrossInfoSlice, {setCrossInfo, setEdit, setState} from "../../features/crossInfoSlice";
+import {setCrossInfo, setEdit, setState} from "../../features/crossInfoSlice";
 import {setStateSave} from "../../features/stateSaveSlice";
 import {setCheck, setCheckErr, setEditInfo} from "../../features/additionalInfoSlice";
 import {RootState} from "../../app/store";
