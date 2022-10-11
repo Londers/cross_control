@@ -20,6 +20,7 @@ function MgrTable(props: {mgrs: Mgr[] | undefined}) {
         {
             field: "phase",
             headerName: "№ фазы",
+            minWidth: 85,
             ...defaultColumnOptions,
             editable: false,
             headerAlign: "center",
@@ -34,6 +35,7 @@ function MgrTable(props: {mgrs: Mgr[] | undefined}) {
                 changeMgr(Number(params.id), newMgr)
                 return {...params.props}
             },
+            minWidth: 60,
             ...defaultColumnOptions,
             headerAlign: "center",
             align: "center",
@@ -47,6 +49,7 @@ function MgrTable(props: {mgrs: Mgr[] | undefined}) {
                 changeMgr(Number(params.id), newMgr)
                 return {...params.props}
             },
+            minWidth: 60,
             ...defaultColumnOptions,
             headerAlign: "center",
             align: "center",

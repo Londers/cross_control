@@ -18,7 +18,7 @@ import {
     SendSendMsg
 } from "../common";
 import {selectCrossInfo} from "./crossInfoSlice";
-import {prepareVVTab} from "../common/otherFunctions";
+import {fixDaySets, prepareVVTab} from "../common/otherFunctions";
 import {selectStateSave} from "./stateSaveSlice";
 import {selectCheckErr, selectEdit, selectZoom} from "./additionalInfoSlice";
 
@@ -85,7 +85,7 @@ function ControlButtons(props: { setShowCheck: Function, setShowEdit: Function, 
     }
     const handleCheckButtonClick = () => {
         props.setShowCheck(true)
-        dispatch(wsSendMessage({type: "checkB", state: state} as SendCheckMsg))
+        dispatch(wsSendMessage({type: "checkB", state: fixDaySets(state)} as SendCheckMsg))
     }
     const handleReferenceButtonClick = () => {
         props.setShowReference(true)

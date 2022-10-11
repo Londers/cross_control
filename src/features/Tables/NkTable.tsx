@@ -25,6 +25,7 @@ function NkTable(props: { currentNk: Nk[] | undefined }) {
             editable: false,
             headerAlign: "center",
             align: "center",
+            minWidth: 115,
         },
         {
             field: "monday", headerName: "пн.",

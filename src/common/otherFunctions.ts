@@ -1,4 +1,5 @@
 import {Defstatis, Pointset, SetTimeUse, State, Use, Useinput} from "./index";
+
 export const prepareVVTab = (state: State): State => {
     const oldVersion = state.Model.vpcpdr === 3
 
@@ -104,4 +105,15 @@ export const sizeVerification = (state: State | undefined): State => {
     }
 
     return {...state, arrays: {...state.arrays, SetTimeUse}}
+}
+
+export const fixDaySets = (state: State | undefined): State | undefined => {
+    if (!state) return state
+    const newState: State = JSON.parse(JSON.stringify(state))
+
+    newState.arrays.DaySets.daysets.forEach(daySet => {
+        if (daySet.count !== 0) daySet.lines[daySet.count - 1].hour = 24
+    })
+
+    return newState
 }

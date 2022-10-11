@@ -31,6 +31,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerName: "№ перекл.",
             align: "center",
             headerAlign: "center",
+            minWidth: 100,
             ...defaultColumnOptions,
             editable: false
         },
@@ -39,6 +40,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerName: "Вр. вкл",
             align: "center",
             headerAlign: "center",
+            minWidth: 80,
             ...defaultColumnOptions,
             editable: !props.redaction,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
@@ -52,6 +54,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerName: "Тип фазы",
             align: "center",
             headerAlign: "center",
+            minWidth: 100,
             ...defaultColumnOptions,
             flex: 1.5,
             editable: false,
@@ -116,6 +119,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerName: "№ фазы",
             align: "center",
             headerAlign: "center",
+            minWidth: 80,
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
                 if (props.currentPk && (params.id !== 1)) {
@@ -154,6 +158,7 @@ function PkTable(props: { currentPk: Pk, pkNum: number, currentRow: number, setC
             headerName: "+пред.",
             align: "center",
             headerAlign: "center",
+            minWidth: 70,
             ...defaultColumnOptions,
             editable: false,
             renderCell: (params => {
