@@ -364,6 +364,8 @@ export class PkFiniteStateMachine implements Pk {
                 } else {
                     draft.lineSegment.splice(draft.pointer.next, 0, draft.sts[draft.pointer.current].stop - currMinDur)
                 }
+            } else {
+                return
             }
 
             if ((type === 1) || (type === 8)) customNum = 0
@@ -406,16 +408,22 @@ export class PkFiniteStateMachine implements Pk {
             if (draft.pointer.current === 0) return draft
 
             if (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
-                const currentSave = draft.pointer.current
-                while (!tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) {
-                    draft.pointer.decrement()
-                    if (draft.pointer.current === currentSave) {
-                        while (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
-                            draft.sts.splice(draft.pointer.current, 1)
-                            draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+                if (draft.tpu === 1) {
+                    draft.sts.splice(draft.pointer.current, 1)
+                    draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+                    return
+                } else {
+                    const currentSave = draft.pointer.current
+                    while (!tvpNums.some(tvp => tvp === draft.sts[draft.pointer.current].tf)) {
+                        draft.pointer.decrement()
+                        if (draft.pointer.current === currentSave) {
+                            while (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
+                                draft.sts.splice(draft.pointer.current, 1)
+                                draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+                            }
+                            draft.sts = draft.convertLineToSts(draft.getLinesCount())
+                            return
                         }
-                        draft.sts = draft.convertLineToSts(draft.getLinesCount())
-                        return
                     }
                 }
             }
@@ -451,6 +459,7 @@ export class PkFiniteStateMachine implements Pk {
 
     changeType(type: number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
+            if (replaceNums.some(repl => repl === type) || draft.sts[draft.pointer.current].start === draft.sts[draft.pointer.current].stop) return
             draft.sts[draft.pointer.current].tf = type
             if ((type === 1) || (type === 8)) draft.sts[draft.pointer.current].num = 0
         }).getPk()

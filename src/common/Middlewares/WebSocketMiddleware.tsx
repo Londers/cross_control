@@ -47,7 +47,13 @@ WebSocketListenerMiddleware.startListening({
             ws = new WebSocket(action.payload)
             ws.onopen = () => console.log("opened")
             ws.onerror = (e) => console.log("error", e)
-            ws.onclose = (e) => console.log("closed", e)
+            ws.onclose = (e) => {
+                if (e.code === 1000) {
+                    alert(e.reason)
+                    window.close()
+                }
+                console.log("closed", e)
+            }
             ws.onmessage = (e) => listenerApi.dispatch(wsGetMessage(JSON.parse(e.data)))
         } else if (wsSendMessage.match(action)) {
             ws.send(JSON.stringify(action.payload as OutcomingWebSocketMessage))
