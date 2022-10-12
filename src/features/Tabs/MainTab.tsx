@@ -140,7 +140,7 @@ function MainTab() {
                 <TextField
                     label="№"
                     type="number"
-                    style={{width: "60px"}}
+                    style={{width: "100px"}}
                     value={crossInfo.state?.id ?? -1}
                     onChange={handleIdChange}
                 />

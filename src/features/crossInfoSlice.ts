@@ -21,6 +21,7 @@ export const crossInfoSlice = createSlice({
                 if (action.payload.state.arrays.defstatis.lvs[0].period === 0) {
                     action.payload.state.arrays.defstatis.lvs[0].period = 5
                 }
+                if (!action.payload.edit) alert("Перекрёсток редактируется другим пользователем")
             }
             Object.assign(state, {...action.payload, state: {...sizeVerification(action.payload.state)}})
         },
@@ -113,7 +114,7 @@ export const crossInfoSlice = createSlice({
         setPeriod: (state, action: PayloadAction<number>) => {
             if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
         },
-        setMgr: (state, action: PayloadAction<{index: number, mgr: Mgr}>) => {
+        setMgr: (state, action: PayloadAction<{ index: number, mgr: Mgr }>) => {
             if (state.state) state.state.arrays.mgrs[action.payload.index] = action.payload.mgr
         },
 
@@ -244,5 +245,6 @@ export const selectCrossInfo = (state: RootState) => state.crossInfo
 export const selectSetupDk = (state: RootState) => state.crossInfo.state?.arrays.SetupDK ?? {} as SetupDK
 export const selectMgr = (state: RootState) => state.crossInfo.state?.arrays.mgrs
 export const selectHistory = (state: RootState) => state.crossInfo.history
+export const selectEdit = (state: RootState) => state.crossInfo.edit
 
 export default crossInfoSlice.reducer

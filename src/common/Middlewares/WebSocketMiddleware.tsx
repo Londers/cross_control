@@ -95,6 +95,12 @@ WebSocketListenerMiddleware.startListening({
                                 listenerApi.dispatch(setStateSave(msg.state))
                             }
                         }
+                    } else {
+                        if (msg.message) {
+                            alert(msg.message)
+                        } else {
+                            alert("Ошибка отправки изменений на ДК")
+                        }
                     }
                     // listenerApi.dispatch(setEdit((action.payload.data as SendMsg)))
                     break;
@@ -102,9 +108,9 @@ WebSocketListenerMiddleware.startListening({
                 case "createB": {
                     const msg = action.payload.data as CreateMsg
                     if (!msg.status) {
-                        if (msg.result) {
-                            alert(msg.result)
-                        } else {
+                        if (!msg.message) {
+                        //     alert(msg.result)
+                        // } else {
                             alert("Ошибка при создании перекрёстка")
                         }
                     } else {

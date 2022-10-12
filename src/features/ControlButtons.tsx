@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button} from "@mui/material";
 import SendIcon from "../common/icons/SendIcon";
 import AddIcon from "../common/icons/AddIcon";
@@ -17,19 +17,21 @@ import {
     SendReloadMsg,
     SendSendMsg
 } from "../common";
-import {selectCrossInfo} from "./crossInfoSlice";
+import {selectCrossInfo, selectEdit} from "./crossInfoSlice";
 import {fixDaySets, prepareVVTab} from "../common/otherFunctions";
 import {selectStateSave} from "./stateSaveSlice";
-import {selectCheckErr, selectEdit, selectZoom} from "./additionalInfoSlice";
+import {selectCheckErr, selectCustomEdit, selectZoom} from "./additionalInfoSlice";
 
 function ControlButtons(props: { setShowCheck: Function, setShowEdit: Function, setShowReference: Function }) {
     const width = 40
     const height = 40
 
+    const edit = useAppSelector(selectEdit)
+
     const dispatch = useAppDispatch()
     const state = useAppSelector(selectCrossInfo).state
     const stateSave = useAppSelector(selectStateSave)
-    const edit = useAppSelector(selectEdit)
+    const customEdit = useAppSelector(selectCustomEdit)
     const zoom = useAppSelector(selectZoom)
 
     const checkErr = useAppSelector(selectCheckErr)
@@ -46,12 +48,12 @@ function ControlButtons(props: { setShowCheck: Function, setShowEdit: Function, 
 
     let [disabledCheck, setDisabledCheck] = useState(true)
     useEffect(() => {
-        if (!edit) {
+        if (!customEdit) {
             setDisabledCheck(true)
             return
         }
         if (state && stateSave) setDisabledCheck(JSON.stringify(state) === JSON.stringify(stateSave))
-    }, [edit, state, stateSave])
+    }, [customEdit, state, stateSave])
 
     const handleSendButtonClick = () => {
         if (state) {
@@ -95,30 +97,30 @@ function ControlButtons(props: { setShowCheck: Function, setShowEdit: Function, 
     return (
         <div className="buttonGroup">
             <Button variant="outlined" title="Отправить изменения на ДК" onClick={handleSendButtonClick}
-                    disabled={disabledSend}>
+                    disabled={!edit || disabledSend}>
                 <SendIcon width={width} height={height}/>
             </Button>
             <Button variant="outlined" title="Создать новый перекрёсток" onClick={handleCreateButtonClick}
-                    disabled={!disabledCreate}>
+                    disabled={!edit || !disabledCreate}>
                 <AddIcon width={width} height={height}/>
             </Button>
             <Button variant="outlined" title="Обновить данные на АРМ" onClick={handleReloadButtonClick}
-                    disabled={!edit}>
+                    disabled={!edit || !customEdit}>
                 <ReloadIcon width={width} height={height}/>
             </Button>
-            <Button variant="outlined" title="Удалить перекрёсток" onClick={handleDeleteButtonClick} disabled={!edit}>
+            <Button variant="outlined" title="Удалить перекрёсток" onClick={handleDeleteButtonClick}
+                    disabled={!edit || !customEdit}>
                 <DeleteIcon width={width} height={height}/>
             </Button>
             <Button variant="outlined" title="Список операторов на АРМе" onClick={handleCheckControlButtonClick}>
                 <CheckEditIcon width={width} height={height}/>
             </Button>
             <Button variant="outlined" title="Принудительно обновить контроллер" onClick={handleForceSendButtonClick}
-                    disabled={!edit}>
+                    disabled={!edit || !customEdit}>
                 <ForceSendIcon width={width} height={height}/>
             </Button>
             <Button variant="outlined" title="Проверить корректность массивов" onClick={handleCheckButtonClick}
-                    disabled={disabledCheck}>
-                {/*TODO: {Откуда это??} заполнить суточные карты с заменой 24 на 0 в последних строках. !Перед отправкой!*/}
+                    disabled={!edit || disabledCheck}>
                 Проверка
             </Button>
             <Button variant="outlined" title="Получить справку по странице" onClick={handleReferenceButtonClick}>

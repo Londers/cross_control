@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Button} from "@mui/material";
 import {useAppSelector} from "../app/hooks";
-import {selectCheck, selectEdit} from "./additionalInfoSlice";
+import {selectCheck, selectCustomEdit} from "./additionalInfoSlice";
 import CheckInfo from "./Other/CheckInfo";
 import EditInfo from "./Other/EditInfo";
 import ReferenceInfo from "./Other/ReferenceInfo";
@@ -15,7 +15,7 @@ function AdditionalButtons(props: { check: boolean, edit: boolean, reference: bo
     const [showHistoryInfo, setShowHistoryInfo] = useState(true)
 
     const checkInfo = useAppSelector(selectCheck)
-    const editInfo = useAppSelector(selectEdit)
+    const editInfo = useAppSelector(selectCustomEdit)
 
     const setShowCheck = () => {
         setShowCheckInfo(!showCheckInfo)

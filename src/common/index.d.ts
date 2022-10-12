@@ -43,6 +43,7 @@ export interface SendMsg {
     state?: State;
     status: boolean;
     user?: string;
+    message?: string;
 }
 
 export interface CreateMsg {

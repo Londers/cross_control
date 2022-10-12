@@ -4,13 +4,13 @@ import {RootState} from "../app/store";
 
 const initialState: {
     check: CheckMsg,
-    edit: EditInfoMsg,
+    customEdit: EditInfoMsg,
     zoom: number,
     checkErr: boolean,
     history: Date | undefined,
 } = {
     check: {result: [], status: false},
-    edit: {users: []},
+    customEdit: {users: []},
     zoom: -1,
     checkErr: true,
     history: undefined,
@@ -24,7 +24,7 @@ export const additionalInfoSlice = createSlice({
             state.check = action.payload
         },
         setEditInfo: (state, action: PayloadAction<EditInfoMsg>) => {
-            state.edit = action.payload
+            state.customEdit = action.payload
         },
         setZoom: (state, action: PayloadAction<number>) => {
             state.zoom = action.payload
@@ -41,7 +41,7 @@ export const additionalInfoSlice = createSlice({
 export const {setCheck, setEditInfo, setZoom, setCheckErr, setHistory} = additionalInfoSlice.actions
 
 export const selectCheck = (state: RootState) => state.additionalInfo.check
-export const selectEdit = (state: RootState) => state.additionalInfo.edit
+export const selectCustomEdit = (state: RootState) => state.additionalInfo.customEdit
 export const selectZoom = (state: RootState) => state.additionalInfo.zoom
 export const selectCheckErr = (state: RootState) => state.additionalInfo.checkErr
 
