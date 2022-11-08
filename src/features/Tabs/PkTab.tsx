@@ -178,7 +178,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
                     <Select
                         labelId="demo-simple-select-label"
                         // id="demo-simple-select"
-                        value={(currentPk?.tc ?? 0 > 3) ? -1 : currentPk?.tc ?? -1}
+                        value={((currentPk?.tc ?? 0) > 3) ? -1 : (currentPk?.tc ?? -1)}
                         label="Специальный ПК"
                         onChange={(event) => {
                             const value = Number(event.target?.value)

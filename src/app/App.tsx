@@ -36,8 +36,8 @@ function App() {
         }
         setShowControls(true)
         if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-            // dispatch(wsConnect("wss://192.168.115.134:4443/user/Admin/cross/controlW?Region=1&Area=1&ID=1"))
-            dispatch(wsConnect("wss://192.168.0.101:4443/user/Admin/cross/controlW?Region=1&Area=1&ID=7"))
+            dispatch(wsConnect("wss://192.168.115.134:4443/user/Admin/cross/controlW?Region=1&Area=1&ID=1"))
+            // dispatch(wsConnect("wss://192.168.0.101:4443/user/Admin/cross/controlW?Region=1&Area=1&ID=7"))
         } else {
             dispatch(wsConnect(`wss://${window.location.host}/user/${localStorage.getItem("login")}/cross/controlW${window.location.search}`))
         }
