@@ -276,8 +276,8 @@ function PkTab(props: { pk: number, setPk: Function }) {
                         label="Редакция"
                         onChange={handlePkEditionTypeChange}
                     >
-                        <MenuItem value={0} key={0}>Длительностей</MenuItem>)
-                        <MenuItem value={1} key={1}>Вр. влкючения</MenuItem>)
+                        <MenuItem value={0} key={0}>Длительностей</MenuItem>
+                        <MenuItem value={1} key={1}>Вр. влкючения</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>

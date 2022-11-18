@@ -83,7 +83,7 @@ function ControlButtons(props: { setShowCheck: Function, setShowEdit: Function, 
         dispatch(wsSendMessage({type: "editInfoB"} as SendEditInfoMsg))
     }
     const handleForceSendButtonClick = () => {
-        dispatch(wsSendMessage({type: "dispatch", id: state?.id, cmd: 1, param: 0} as SendDispatch))
+        dispatch(wsSendMessage({type: "dispatch", id: state?.idevice, cmd: 1, param: 0} as SendDispatch))
     }
     const handleCheckButtonClick = () => {
         props.setShowCheck(true)
