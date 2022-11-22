@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Button, Grid} from "@mui/material";
+import {Button, Grid} from "@mui/material";
 import CopyIcon from "../../common/icons/CopyIcon";
 import InsertIcon from "../../common/icons/InsertIcon";
 import ReloadIcon from "../../common/icons/ReloadIcon";

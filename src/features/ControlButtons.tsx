@@ -60,17 +60,17 @@ function ControlButtons(props: { setShowCheck: Function, setShowEdit: Function, 
             if (state.area === stateSave.area) {
                 dispatch(wsSendMessage({
                     type: "sendB",
-                    state: prepareVVTab(state),
+                    state: prepareVVTab(fixDaySets(state)),
                     rePaint: state.dgis !== stateSave.dgis,
                     z: zoom
                 } as SendSendMsg))
             } else {
-                dispatch(wsSendMessage({type: "createB", state: state} as SendCreateMsg))
+                dispatch(wsSendMessage({type: "createB", state: fixDaySets(state)} as SendCreateMsg))
             }
         }
     }
     const handleCreateButtonClick = () => {
-        dispatch(wsSendMessage({type: "createB", state: state} as SendCreateMsg))
+        dispatch(wsSendMessage({type: "createB", state: fixDaySets(state)} as SendCreateMsg))
     }
     const handleReloadButtonClick = () => {
         dispatch(wsSendMessage({type: "updateB"} as SendReloadMsg))

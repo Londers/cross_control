@@ -1,6 +1,7 @@
 import {Defstatis, Pointset, SetTimeUse, State, Use, Useinput} from "./index";
 
-export const prepareVVTab = (state: State): State => {
+export const prepareVVTab = (state: State | undefined): State | undefined => {
+    if (!state) return undefined
     const oldVersion = state.Model.vpcpdr === 3
 
     const SetTimeUse: SetTimeUse = JSON.parse(JSON.stringify(state.arrays.SetTimeUse))
@@ -115,5 +116,15 @@ export const fixDaySets = (state: State | undefined): State | undefined => {
         if (daySet.count !== 0) daySet.lines[daySet.count - 1].hour = 24
     })
 
+    let breakFlag = false
+    newState.arrays.SetCtrl.Stage.forEach(st => {
+        if (!breakFlag) {
+            if ((st.end.hour === 0) && (st.end.min === 0)) {
+                st.end.hour = 24
+                st.end.min = 0
+                breakFlag = true
+            }
+        }
+    })
     return newState
 }
