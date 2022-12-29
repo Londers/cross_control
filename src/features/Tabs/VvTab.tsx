@@ -1,5 +1,5 @@
 import React, {ChangeEvent} from "react";
-import {Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
+import {FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {selectCrossInfo, setIte, setPeriod} from "../crossInfoSlice";
 import VvMainTable from "../Tables/VvMainTable";
@@ -15,7 +15,10 @@ function VvTab() {
         if (crossInfo.state) dispatch(setIte(Number(event.currentTarget.value)))
     }
     const handlePeriodChange = (event: SelectChangeEvent<number>) => {
-        if (crossInfo.state) dispatch(setPeriod(Number(event.target.value)))
+        if (crossInfo.state) {
+            dispatch(setPeriod(Number(event.target.value)))
+            // dispatch(setIte(true ? 0 : 5))
+        }
     }
 
     return (
@@ -29,7 +32,7 @@ function VvTab() {
                 Использование внешних входов
             </Grid>
             <Grid item xs style={{marginTop: "1rem", width: "50rem"}}>
-                <VvMainTable SetTimeUse={SetTimeUse} />
+                <VvMainTable SetTimeUse={SetTimeUse}/>
             </Grid>
 
             <Grid item xs style={{marginTop: "1rem", width: "50rem", display: "flex", justifyContent: "space-between"}}>
@@ -48,7 +51,13 @@ function VvTab() {
                         value={crossInfo.state?.arrays.defstatis.lvs[0].period ?? 0}
                         label="Т уср ИН"
                         onChange={handlePeriodChange}
+                        disabled={!crossInfo.state?.arrays.SetTimeUse.uses.some(use => use.type !== 0)}
                     >
+                        <MenuItem
+                            style={{display: crossInfo.state?.arrays.SetTimeUse.uses.some(use => use.type !== 0) ? "none" : ""}}
+                            value="0" key={-1}>
+                            0
+                        </MenuItem>
                         <MenuItem value="1" key={0}>1</MenuItem>
                         <MenuItem value="5" key={1}>5</MenuItem>
                         <MenuItem value="10" key={2}>10</MenuItem>

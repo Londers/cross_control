@@ -9,7 +9,7 @@ import {
     SelectChangeEvent,
     TextField
 } from "@mui/material";
-import React, {ChangeEvent, useEffect, useState} from "react";
+import React, {ChangeEvent, useEffect, useRef, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../../app/hooks";
 import {selectCrossInfo, selectMgr, setPk} from "../crossInfoSlice";
 import CopyIcon from "../../common/icons/CopyIcon";
@@ -21,6 +21,7 @@ import MgrTable from "../Tables/MgrTable";
 import {Pk} from "../../common";
 import {PkFiniteStateMachine} from "../../common/PkFiniteStateMachine";
 import {reloadPk} from "../../common/Middlewares/TabReloadMiddleware";
+import {selectPkTransferNum, setPkTransferNum} from "../additionalInfoSlice";
 
 function PkTab(props: { pk: number, setPk: Function }) {
     const width = 40
@@ -31,6 +32,8 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const currentPk = crossInfo.state?.arrays.SetDK.dk[props.pk - 1]
     const mgrs = useAppSelector(selectMgr)
 
+    const [transfer, setTransfer] = useState<boolean>(false)
+    const transferRow = useAppSelector(selectPkTransferNum)
     const [tc, setTc] = useState<number>(currentPk?.tc ?? 0)
     const [shift, setShift] = useState<number>(currentPk?.shift ?? 0)
     const [redaction, setRedaction] = useState(0)
@@ -38,13 +41,18 @@ function PkTab(props: { pk: number, setPk: Function }) {
     useEffect(() => {
         setTc(currentPk?.tc ?? 0)
         setShift(currentPk?.shift ?? 0)
+        setTransfer(false)
     }, [currentPk])
 
     const [selectedRow, setSelectedRow] = useState<number[]>([1])
-    const pkFSM = new PkFiniteStateMachine(currentPk, selectedRow[0] === 0 ? 0 : selectedRow[0] - 1)
+    const pkFSM = new PkFiniteStateMachine(currentPk, selectedRow[0] === 0 ? 0 : selectedRow[0] - 1, transferRow)
     // const [pkFSM, setPkFSM] = useState<PkFiniteStateMachine>(new PkFiniteStateMachine(currentPk))
 
     const [selectedInsert, setSelectedInsert] = useState<number>(-1)
+
+    useEffect(() => {
+        if ((transferRow + 1) === selectedRow[0]) dispatch(setPkTransferNum(-1))
+    }, [selectedRow])
 
     const handlePkSelectChange = (event: SelectChangeEvent<number>) => props.setPk(Number(event.target.value))
 
@@ -75,10 +83,12 @@ function PkTab(props: { pk: number, setPk: Function }) {
     const handlePkRazlenChange = () => {
         if (currentPk) changePk(pkFSM.changeRazlen(!currentPk.razlen))
     }
-
     const handlePkTransferChange = () => {
+        setTransfer(!transfer)
     }
-
+    const handleTransferRowChange = (event: SelectChangeEvent<number>) => {
+        dispatch(setPkTransferNum(Number(event.target.value)))
+    }
     const handlePkSwitchInsert = (event: SelectChangeEvent<number>) => {
         if (currentPk) {
             const rowForFSM = selectedRow[0] === 0 ? 0 : selectedRow[0] - 1
@@ -89,6 +99,7 @@ function PkTab(props: { pk: number, setPk: Function }) {
         }
         setSelectedInsert(-1)
     }
+
     const handlePkSwitchDelete = () => {
         if (currentPk) {
             if (selectedRow[0] !== 1) setSelectedRow([selectedRow[0] - 1])
@@ -229,8 +240,8 @@ function PkTab(props: { pk: number, setPk: Function }) {
                         label="Тип ПУ"
                         onChange={handlePkTypePuChange}
                     >
-                        <MenuItem value={0} key={0}>ПК</MenuItem>)
-                        <MenuItem value={1} key={1}>ЛПУ</MenuItem>)
+                        <MenuItem value={0} key={0}>ПК</MenuItem>
+                        <MenuItem value={1} key={1}>ЛПУ</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControlLabel
@@ -242,17 +253,31 @@ function PkTab(props: { pk: number, setPk: Function }) {
                 />
                 <FormControlLabel
                     control={<Checkbox
-                        checked={false}
+                        checked={transfer}
                         onChange={handlePkTransferChange}/>}
                     label="перенос"
                     labelPlacement="end"
                 />
+                {transfer && <FormControl sx={{width: "fit-content", minWidth: "90px"}}>
+                    <InputLabel id="demo-simple-select-label">№ перекл.</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        // id="demo-simple-select"
+                        value={transferRow}
+                        label="№ перекл."
+                        onChange={handleTransferRowChange}
+                    >
+                        <MenuItem value={-1} key={-1}>---</MenuItem>
+                        {currentPk?.sts.filter(st => (st.start !== st.stop) && (st.line !== selectedRow[0]))
+                            .map(st => <MenuItem value={st.line - 1} key={st.line}>№{st.line}</MenuItem>)}
+                    </Select>
+                </FormControl>}
             </Grid>
 
             <Grid item xs style={{marginTop: "1rem", width: "50rem", display: "flex", justifyContent: "space-between"}}>
                 <Select onChange={handlePkSwitchInsert} value={selectedInsert}>
                     <MenuItem value={-1} key={0}>Вставить перекл.</MenuItem>)
-                    <MenuItem value={0} key={1}> </MenuItem>)
+                    <MenuItem value={0} key={1}>---</MenuItem>)
                     <MenuItem value={1} key={2}>МГР</MenuItem>)
                     <MenuItem value={2} key={3}>1 ТВП</MenuItem>)
                     <MenuItem value={3} key={4}>2 ТВП</MenuItem>)

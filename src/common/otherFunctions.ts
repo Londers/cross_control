@@ -124,6 +124,9 @@ export const fixDaySets = (state: State | undefined): State | undefined => {
                 st.end.min = 0
                 breakFlag = true
             }
+        } else {
+            st.end.hour = 0
+            st.end.min = 0
         }
     })
     return newState

@@ -144,28 +144,19 @@ WebSocketListenerMiddleware.startListening({
                     window.open(window.location.href);
                     break;
                 }
-                // case "dispatch":
-                //     listenerApi.dispatch(setDispatch(action.payload.data as DispatchMsg))
-                //     break;
-                // case "crossUpdate":
-                //     listenerApi.dispatch(setCross(action.payload.data as CrossUpdateMsg))
-                //     break;
-                // case "stateChange":
-                //     listenerApi.dispatch(setState(action.payload.data as StateChangeMsg))
-                //     break;
-                // case "crossConnection":
-                //     listenerApi.dispatch(setConnection(action.payload.data as CrossConnectionMsg))
-                //     break;
-                // case "phase":
-                //     listenerApi.dispatch(setPhaseInfo(action.payload.data as PhaseMsg))
-                //     listenerApi.dispatch(addDK(action.payload.data as PhaseMsg))
-                //     break;
-                // case "error":
-                //     listenerApi.dispatch(setError(action.payload.data as ChangeEditMsg))
-                //     break;
-                // case "close":
-                //     listenerApi.dispatch(setClose(action.payload.data as ChangeEditMsg))
-                //     break;
+                case "repaintCheck":
+                    if ("status" in action.payload.data && !action.payload.data.status) alert(action.payload.data.status)
+                    break;
+                case "error":
+                    if ("message" in action.payload.data) {
+                        alert("Произошла ошибка. Обратитесь к администратору")
+                        console.log("error ", action.payload.data.message)
+                    }
+                    break;
+                case "close":
+                    ws.close(1000)
+                    window.close()
+                    break;
                 default:
                     console.log("type not found:", action.payload)
                     break;

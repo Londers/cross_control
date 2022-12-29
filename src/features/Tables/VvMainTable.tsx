@@ -2,7 +2,7 @@ import React from "react";
 import {DataGrid, GridColumns, GridPreProcessEditCellProps, ruRU} from "@mui/x-data-grid";
 import {SetTimeUse, Use} from "../../common";
 import {useAppDispatch} from "../../app/hooks";
-import { updateTimeUse} from "../crossInfoSlice";
+import {updateTimeUse} from "../crossInfoSlice";
 
 const defaultColumnOptions = {
     flex: 1,
@@ -31,6 +31,10 @@ function VvMainTable(props: { SetTimeUse: SetTimeUse | undefined }) {
             type: "number",
             ...defaultColumnOptions,
             preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+                // if ((typeof params.row.type !== "number") && (typeof params.row.type !== "string") ){
+                //     console.log("zaebalo")
+                //     return {...params.row, type: "0"}
+                // }
                 const newTimeUse = {...params.row, type: params.props.value}
                 delete newTimeUse.id
                 changeTimeUse(Number(params.id), newTimeUse)

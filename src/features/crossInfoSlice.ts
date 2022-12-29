@@ -18,7 +18,7 @@ export const crossInfoSlice = createSlice({
     reducers: {
         setCrossInfo: (state, action: PayloadAction<CrossControlInfoMsg>) => {
             if (action.payload.state) {
-                if (action.payload.state.arrays.defstatis.lvs[0].period === 0) {
+                if ((action.payload.state.arrays.defstatis.lvs[0].period === 0) && (action.payload.state.arrays.SetTimeUse.uses.some(use => use.type !== 0))) {
                     action.payload.state.arrays.defstatis.lvs[0].period = 5
                 }
                 if (!action.payload.edit) alert("Перекрёсток редактируется другим пользователем")
@@ -108,12 +108,6 @@ export const crossInfoSlice = createSlice({
         setPk: (state, action: PayloadAction<{ num: number, pk: Pk }>) => {
             if (state.state) Object.assign(state.state.arrays.SetDK.dk[action.payload.num], action.payload.pk)
         },
-        setIte: (state, action: PayloadAction<number>) => {
-            if (state.state) state.state.arrays.SetTimeUse.ite = action.payload
-        },
-        setPeriod: (state, action: PayloadAction<number>) => {
-            if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
-        },
         setMgr: (state, action: PayloadAction<{ index: number, mgr: Mgr }>) => {
             if (state.state) state.state.arrays.mgrs[action.payload.index] = action.payload.mgr
         },
@@ -169,10 +163,23 @@ export const crossInfoSlice = createSlice({
 
         // vv tab
         updateTimeUse: (state, action: PayloadAction<{ id: number, use: Use }>) => {
-            if (state.state) state.state.arrays.SetTimeUse.uses[action.payload.id] = action.payload.use
+            if (state.state && (action.payload.use.type !== null)) {
+                state.state.arrays.SetTimeUse.uses[action.payload.id] = action.payload.use
+                if (state.state.arrays.SetTimeUse.uses.some(use => use.type !== 0)) {
+                    if (state.state.arrays.defstatis.lvs[0].period === 0) state.state.arrays.defstatis.lvs[0].period = 5
+                } else {
+                    if (state.state.arrays.defstatis.lvs[0].period !== 0) state.state.arrays.defstatis.lvs[0].period = 0
+                }
+            }
         },
         updateNotwork: (state, action: PayloadAction<{ id: number, value: number }>) => {
             if (state.state) state.state.arrays.SetTimeUse.notwork[action.payload.id] = action.payload.value
+        },
+        setIte: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.arrays.SetTimeUse.ite = action.payload
+        },
+        setPeriod: (state, action: PayloadAction<number>) => {
+            if (state.state) state.state.arrays.defstatis.lvs[0].period = action.payload
         },
 
         // kv tab
@@ -218,8 +225,6 @@ export const {
     setSetupDk,
 
     setPk,
-    setIte,
-    setPeriod,
     setMgr,
 
     updateSk,
@@ -236,6 +241,8 @@ export const {
     setKv,
     updateTimeUse,
     updateNotwork,
+    setIte,
+    setPeriod,
     updateKvTime,
     updateKvTVP,
     updateKvMGR,

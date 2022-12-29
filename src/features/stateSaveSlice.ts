@@ -11,10 +11,11 @@ export const  stateSaveSlice = createSlice({
     initialState,
     reducers: {
         setStateSave: (state, action: PayloadAction<State>) => {
-            if (action.payload.arrays.defstatis.lvs[0].period === 0) {
-                action.payload.arrays.defstatis.lvs[0].period = 5
-                alert("Исправлена ошибка Т уср ИН во Внешних входах. Отправьте изменение на контроллер.")
-            }
+
+            // if ((action.payload.arrays.defstatis.lvs[0].period === 0) && action.payload.arrays.SetTimeUse.uses.some(use => use.type !== 0)) {
+            //     action.payload.arrays.defstatis.lvs[0].period = 5
+            //     alert("Исправлена ошибка Т уср ИН во Внешних входах. Отправьте изменение на контроллер.")
+            // }
             Object.assign(state, {...sizeVerification(action.payload)})
         },
     }

@@ -7,6 +7,7 @@ export const replaceNums = [5, 6, 7]
 
 export class PkFiniteStateMachine implements Pk {
     private _pointer!: Pointer
+    private _transfer!: number
     tvpWithRepls: St[]
 
     [immerable] = true
@@ -22,9 +23,9 @@ export class PkFiniteStateMachine implements Pk {
     tpu: number;
     twot: boolean;
 
-    constructor(pk: Pk | undefined, pointer: number) {
+    constructor(pk: Pk | undefined, pointer: number, transfer?: number) {
         this.tvpWithRepls = []
-        console.log("create FSM", pointer)
+        // console.log("create FSM", pointer, transfer)
         this.desc = pk?.desc ?? "";
         this.dk = pk?.dk ?? 0;
         this.pk = pk?.pk ?? 0;
@@ -37,14 +38,23 @@ export class PkFiniteStateMachine implements Pk {
         this.twot = pk?.twot ?? false;
 
         this.pointer = new Pointer(pointer)
+        this.transfer = transfer ?? -1
+    }
+
+    get pointer(): Pointer {
+        return this._pointer;
     }
 
     set pointer(value: Pointer) {
         this._pointer = value;
     }
 
-    get pointer(): Pointer {
-        return this._pointer;
+    get transfer(): number {
+        return this._transfer;
+    }
+
+    set transfer(value: number) {
+        this._transfer = value;
     }
 
     convertStsToLine = () => {
@@ -82,7 +92,7 @@ export class PkFiniteStateMachine implements Pk {
         }
 
         this.lineSegment = line
-        console.log(this.sts)
+        // console.log(this.sts)
         console.log(this.lineSegment)
     }
 
@@ -419,7 +429,16 @@ export class PkFiniteStateMachine implements Pk {
                         if (draft.pointer.current === currentSave) {
                             while (replaceNums.some(repl => repl === draft.sts[draft.pointer.current].tf)) {
                                 draft.sts.splice(draft.pointer.current, 1)
-                                draft.sts.push({dt: 0, line: 0, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false})
+                                draft.sts.push({
+                                    dt: 0,
+                                    line: 0,
+                                    num: 0,
+                                    plus: false,
+                                    start: 0,
+                                    stop: 0,
+                                    tf: 0,
+                                    trs: false
+                                })
                             }
                             draft.sts = draft.convertLineToSts(draft.getLinesCount())
                             return
@@ -473,7 +492,6 @@ export class PkFiniteStateMachine implements Pk {
 
     doMagic(diff: number): number[] {
         if (isNaN(diff)) return this.lineSegment
-
 
         // ТВП с разной длительностью
         if (this.razlen && this.tvpWithRepls.some(v => v.line === this.pointer.current + 1)) {
@@ -588,6 +606,24 @@ export class PkFiniteStateMachine implements Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
             draft.lineSegment = draft.doMagic(diff)
             draft.sts = draft.convertLineToSts(draft.getLinesCount())
+
+
+            if (draft.transfer !== -1 && draft.transfer !== draft.pointer.next) {
+                // draft.pointer = new Pointer(draft.pointer.current, draft.getLinesCount())
+                while (draft.transfer !== draft.pointer.next) {
+                    draft.pointer.increment()
+
+                    if (draft.getLinesCount() === draft.pointer.current) draft.pointer.setCurrent(0)
+
+                    if (draft.transfer === 0 && draft.pointer.current === 0) break
+
+                    console.log("WHILE ", draft.pointer)
+                    console.log(draft.lineSegment)
+                    draft.lineSegment = draft.doMagic(diff)
+                    draft.sts = draft.convertLineToSts(draft.getLinesCount())
+                }
+            }
+            // draft.sts = draft.convertLineToSts(draft.getLinesCount())
         }).getPk()
     }
 
@@ -597,12 +633,16 @@ export class PkFiniteStateMachine implements Pk {
         }).getPk()
     }
 
-    createNewPk(tc?:number): Pk {
+    createNewPk(tc?: number): Pk {
         return produce<PkFiniteStateMachine>(this, draft => {
             const sts = Array.from({length: 12}, (v, i) => {
                 return {dt: 0, line: i + 1, num: 0, plus: false, start: 0, stop: 0, tf: 0, trs: false}
             })
-            const cycleTime = tc ?? draft.tc
+            let cycleTime = tc ?? draft.tc
+            if (cycleTime === 0) {
+                cycleTime = 100
+                draft.tc = 100
+            }
             sts[0].stop = Math.floor(cycleTime / 2) + cycleTime % 2
             sts[0].num = 1
             sts[1].start = sts[0].stop
@@ -621,7 +661,7 @@ class Pointer {
     private _next = 1
 
     constructor(pointer: number, size?: number) {
-        if (size) {
+        if (size && size > pointer) {
             this.size = size
         }
         this.setCurrent(pointer)
@@ -655,6 +695,7 @@ class Pointer {
 
     setCurrent(current: number) {
         if (current >= this.size) {
+            console.log("shit", current, this.size)
             throw new Error("shit")
         }
         this.increment()
